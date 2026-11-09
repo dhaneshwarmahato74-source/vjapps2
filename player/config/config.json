@@ -1,0 +1,4 @@
+{
+  "server": { "httpHost": "127.0.0.1", "httpPort": 8080 },
+  "artnet": { "bindAddress": "0.0.0.0", "port": 6454, "universe": 0, "respondToPoll": true, "nodeName": "Diamond LED Strobe" }
+}

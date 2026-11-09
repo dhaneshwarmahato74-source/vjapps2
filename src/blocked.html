@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>DK EDITS VJ PLAYER</title>
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src 'self' data:">
+<style>
+  :root { color-scheme: dark; }
+  html,body { margin:0; height:100%; background:#090e15; color:#e6edf3; font:16px/1.5 system-ui,-apple-system,Segoe UI,sans-serif; }
+  main { box-sizing:border-box; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px; padding:24px; text-align:center; }
+  h1 { margin:0; font-size:22px; letter-spacing:.04em; }
+  p { margin:0; max-width:520px; color:#9fb0c0; }
+  .row { display:flex; gap:12px; margin-top:12px; flex-wrap:wrap; justify-content:center; }
+  button { font:inherit; padding:10px 20px; border-radius:8px; border:1px solid #2b394a; background:#142031; color:#e6edf3; cursor:pointer; }
+  button:hover { background:#1b2c42; }
+  button.danger { background:#7a1f2b; border-color:#a3303f; }
+  button.danger:hover { background:#93283a; }
+  .hide { display:none; }
+</style></head>
+<body><main>
+  <h1 id="t">DK EDITS VJ PLAYER</h1>
+  <p id="m"></p>
+  <div class="row">
+    <button id="retry" class="hide">Retry</button>
+    <button id="un" class="danger">Uninstall this app</button>
+    <button id="q">Quit</button>
+  </div>
+</main>
+<script>
+  const q = new URLSearchParams(location.search), kind = q.get('kind') || 'offline';
+  const T = {
+    offline: ['Cannot reach the player', 'Internet / server not reachable right now. Check the connection and press Retry, or uninstall this app.'],
+    removed: ['Player is no longer available', 'The page this app opens has been removed. You can safely uninstall this app.'],
+    disabled: ['Access ended', 'This app has been switched off.'],
+    expired: ['Access expired', 'The access period for this app is over.']
+  };
+  const [t, m] = T[kind] || T.offline;
+  document.getElementById('t').textContent = t;
+  document.getElementById('m').textContent = q.get('msg') || m;
+  if (kind === 'offline') document.getElementById('retry').classList.remove('hide');
+  document.getElementById('retry').onclick = () => window.dk.retry();
+  document.getElementById('un').onclick = () => window.dk.uninstall();
+  document.getElementById('q').onclick = () => window.dk.quit();
+</script></body></html>

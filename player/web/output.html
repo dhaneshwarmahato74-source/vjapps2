@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>DK EDITS VJ PLAYER – Output 4000×500</title>
+<link rel="icon" type="image/png" href="img/favicon.png">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  html, body { margin: 0; height: 100%; background: #000; overflow: hidden; cursor: default; }
+  body.idle { cursor: none; }
+  canvas { display: block; background: #000; }
+  canvas.stretch { width: 100vw; height: 100vh; object-fit: fill; }
+  canvas.fit { width: 100vw; height: 100vh; object-fit: contain; }
+  canvas.crop { width: 100vw; height: 100vh; object-fit: cover; }
+  canvas.native { width: 4000px; height: 500px; position: absolute; left: 0; top: 0; image-rendering: pixelated; }
+  #hint { position: fixed; left: 50%; top: 50%; transform: translate(-50%,-50%); font: 14px system-ui, sans-serif; color: #9aa; background: rgba(0,0,0,.7); padding: 10px 16px; border: 1px solid #333; border-radius: 8px; pointer-events: none; text-align: center; transition: opacity .6s; }
+  #hint.hide { opacity: 0; }
+</style>
+</head>
+<body>
+<canvas id="c" width="4000" height="500" class="stretch"></canvas>
+<div id="hint"><b>Processor output 4000×500</b><br>Click once = fullscreen on THIS screen · L = cycle fit (stretch / fit / crop / native 1:1) · Esc = exit fullscreen<br>Your keyboard shortcuts still control the player from here<br><span id="st">Waiting for the controller window…</span></div>
+<script src="js/core.js"></script>
+<script src="js/render.js"></script>
+<script src="js/wallmap.js"></script>
+<script src="js/neon.js"></script>
+<script>
+(function () {
+  'use strict';
+  /* Two live transports, chosen automatically:
+     1. DIRECT  – mirror the controller's 4000x500 canvas (same browser, pixel-exact, no extra video decoding)
+     2. NETWORK – render from frame state + clips streamed through the bridge (works in another browser / PC, or if the opener link is lost) */
+  const D = window.DLS;
+  const c = document.getElementById('c'), ctx = c.getContext('2d');
+  const hint = document.getElementById('hint'), st = document.getElementById('st');
+  const FITS = ['stretch', 'fit', 'crop', 'native'];
+  let fit = 'stretch', userFit = false, idleT, modeNow = '–';
+  const forceNet = /[?&]net=1/.test(location.search), forcePm = /[?&]pm=1/.test(location.search);
+  let pmAt = 0;
+  function setFit(f) { fit = FITS.indexOf(f) >= 0 ? f : 'stretch'; c.className = fit; }
+  function opener() { try { if (window.opener && !window.opener.closed) return window.opener; } catch (e) { /* ignore */ } return null; }
+
+  // ---------- network transport ----------
+  const S = { alpha: new Array(8).fill(0), cols: Array.from({ length: 8 }, () => [0, 0, 0]), fade: 1 };
+  const net = { m: null, at: 0, labels: false, blend: 'normal', os: 85, ws: null, spN: -1 };
+  const vids = new Map();
+  function vid(url, loop) {
+    let v = vids.get(url);
+    if (!v) { v = document.createElement('video'); v.muted = true; v.loop = loop; v.playsInline = true; v.preload = 'auto'; v.src = url; vids.set(url, v); }
+    return v;
+  }
+  function connect() {
+    if (!/^https?:$/.test(location.protocol)) return;
+    const ws = new WebSocket((location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/ws');
+    net.ws = ws;
+    ws.onopen = () => ws.send(JSON.stringify({ t: 'hello', role: 'output' }));
+    ws.onmessage = (ev) => {
+      if (typeof ev.data !== 'string' || ev.data.indexOf('"t":"f"') < 0) return;
+      let m; try { m = JSON.parse(ev.data); } catch (e) { return; }
+      for (let i = 0; i < 8; i++) { S.cols[i][0] = m.c[i * 3]; S.cols[i][1] = m.c[i * 3 + 1]; S.cols[i][2] = m.c[i * 3 + 2]; S.alpha[i] = m.a[i]; }
+      if (m.cal && D.wallmap) D.wallmap.set(m.cal);
+      S.fade = m.fade; net.labels = m.lb; net.blend = m.v.bl; net.os = m.v.os; net.nz = m.nz; net.nc = m.nc; net.m = m; net.at = performance.now();
+      if (m.fit && !userFit) setFit(m.fit);
+    };
+    ws.onclose = () => setTimeout(connect, 1000);
+    ws.onerror = () => { try { ws.close(); } catch (e) { /* ignore */ } };
+  }
+  D.video = { // renders the clip layer from the last frame state (used by render.drawComposite)
+    draw(cx) {
+      const m = net.m && net.m.v; if (!m || !m.en) return false;
+      const now = performance.now(), fs = m.fs + (now - net.at);
+      const a = m.xf > 0 ? Math.min(1, fs / m.xf) : 1;
+      const want = new Set();
+      const paint = (url, alpha) => { if (!url) return false; const v = vid(url, url !== m.spU); want.add(v); if (v.readyState >= 2) { cx.globalAlpha = alpha; if (D.wallmap && D.wallmap.useWall(m.map, v)) D.wallmap.draw(cx, v, 4000, 500); else cx.drawImage(v, 0, 0, 4000, 500); cx.globalAlpha = 1; return true; } return false; };
+      let ok = false;
+      if (m.sp && m.spU) {
+        const sv = vid(m.spU, false);
+        if (net.spN !== m.spN) { net.spN = m.spN; try { sv.currentTime = 0; } catch (e) { /* ignore */ } }
+        if (a < 1) paint(m.cur, 1);
+        ok = paint(m.spU, a < 1 ? a : 1);
+      } else {
+        if (m.prev && a < 1) paint(m.prev, 1);
+        ok = paint(m.cur, m.prev && a < 1 ? a : 1);
+      }
+      if (m.w && m.all && !m.sp) m.all.forEach((u) => { if (u) want.add(vid(u, true)); }); // keep every clip running -> instant cuts
+      vids.forEach((v) => { if (want.has(v)) { if (v.paused) v.play().catch(() => {}); } else if (!v.paused) v.pause(); });
+      if (m.lvl < 100) { cx.fillStyle = 'rgba(0,0,0,' + (1 - m.lvl / 100) + ')'; cx.fillRect(0, 0, 4000, 500); }
+      return ok;
+    }
+  };
+
+  // ---------- main loop ----------
+  let lastFr = -1, lastFrAt = performance.now();
+  function blank(msg) { ctx.fillStyle = '#000'; ctx.fillRect(0, 0, 4000, 500); st.textContent = msg; hint.classList.remove('hide'); }
+  function loop() {
+    const now = performance.now(), o = (forceNet || forcePm) ? null : opener();
+    let done = false;
+    if (o) {
+      try {
+        const strip = o.document.getElementById('strip'), od = o.DLS;
+        if (od && od.frames !== lastFr) { lastFr = od.frames; lastFrAt = now; }
+        if (strip && now - lastFrAt < 1500) {
+          ctx.drawImage(strip, 0, 0, 4000, 500); done = true; modeNow = 'direct';
+          od.outputSeen = Date.now();
+          const f = od.config.get().output.fit; if (f && f !== fit && !userFit) setFit(f);
+        }
+      } catch (e) { /* cross-origin / closed */ }
+    }
+    if (!done && now - pmAt < 1500) { done = true; modeNow = 'bitmap'; }
+    if (!done) {
+      if (net.m && now - net.at < 1500) {
+        D.render.drawComposite(ctx, S, net.labels, { blend: net.blend, overlayStrength: net.os, neon: net.nz, neonCap: net.nc }); done = true; modeNow = 'network';
+      } else blank(o ? 'Controller not updating – output blanked' : 'Waiting for the controller… (open this with “Output” in the controller page)');
+    }
+    if (done) { st.textContent = 'Live ✓ (' + modeNow + ')'; }
+    requestAnimationFrame(loop);
+  }
+  // third transport: controller posts frames as ImageBitmaps (works even for file:// pages)
+  window.addEventListener('message', (e) => {
+    const m = e.data;
+    if (!m || m.t !== 'bmp' || !m.b || e.source !== window.opener) return;
+    ctx.drawImage(m.b, 0, 0, 4000, 500); try { m.b.close(); } catch (x) { /* ignore */ }
+    pmAt = performance.now();
+    if (m.fit && !userFit) setFit(m.fit);
+  });
+  setInterval(() => { try { if (window.opener) window.opener.postMessage({ t: 'seen', mode: modeNow, need: modeNow !== 'direct' }, '*'); } catch (x) { /* ignore */ } }, 500);
+  connect();
+  setTimeout(() => hint.classList.add('hide'), 4000);
+
+  // ---------- fullscreen / keys ----------
+  window.addEventListener('keydown', (e) => {
+    if (e.code === 'KeyL') { userFit = true; setFit(FITS[(FITS.indexOf(fit) + 1) % FITS.length]); hint.classList.remove('hide'); st.textContent = 'Fit: ' + fit; setTimeout(() => hint.classList.add('hide'), 1500); }
+  });
+  async function goFull() {
+    if (document.fullscreenElement) return;
+    try { // fullscreen on the screen this window is on (needs the one-time "window management" permission)
+      if (window.getScreenDetails) { const d = await window.getScreenDetails(); await document.documentElement.requestFullscreen({ screen: d.currentScreen, navigationUI: 'hide' }); return; }
+    } catch (e) { /* fall back */ }
+    document.documentElement.requestFullscreen().catch(() => {});
+  }
+  window.addEventListener('click', goFull);
+  // keep the player controllable while this window has focus: forward keys to the controller window
+  function fwd(type) {
+    return (e) => {
+      if (e.code === 'KeyL' || e.ctrlKey || e.metaKey || e.altKey) return;
+      const o = opener(); if (!o) return;
+      try { o.dispatchEvent(new o.KeyboardEvent(type, { code: e.code, key: e.key, shiftKey: e.shiftKey, repeat: e.repeat, bubbles: true, cancelable: true })); e.preventDefault(); } catch (x) { /* ignore */ }
+    };
+  }
+  window.addEventListener('keydown', fwd('keydown')); window.addEventListener('keyup', fwd('keyup'));
+  window.addEventListener('mousemove', () => { document.body.classList.remove('idle'); clearTimeout(idleT); idleT = setTimeout(() => document.body.classList.add('idle'), 1500); });
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>

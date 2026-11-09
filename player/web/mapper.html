@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DK EDITS VJ PLAYER – LED Mapper</title>
+<link rel="icon" type="image/png" href="img/favicon.png"><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="img/apple-touch-icon.png"><meta name="theme-color" content="#2a002d">
+<style>
+:root{--bg:#0d0f13;--panel:#161a21;--panel2:#1d222b;--line:#2b323e;--txt:#e6e9ef;--mut:#8b94a5;--acc:#f5b72e;--red:#e84a3f;--ok:#3ecf8e;--warn:#f5b84a;--bad:#ff5d6c}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--txt);font:13px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{display:flex;align-items:center;gap:14px;padding:8px 16px;border-bottom:1px solid #4a3a12;background:linear-gradient(180deg,#1b1810,var(--panel));flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:15px;letter-spacing:.2px}
+.brand .logo{height:46px;width:auto;display:block;filter:drop-shadow(0 0 8px rgba(255,190,40,.35))}
+.bt{display:flex;flex-direction:column;line-height:1.15}.bn{font-weight:800;font-size:17px;letter-spacing:1.5px;background:linear-gradient(90deg,#fff,#ffd24d 60%,#f5a30a);-webkit-background-clip:text;background-clip:text;color:transparent}.bs{font-size:11px;font-weight:500;color:var(--mut);letter-spacing:.4px}
+.badges{display:flex;gap:6px;flex-wrap:wrap;margin-left:auto}
+.badge{padding:2px 8px;border-radius:99px;font-size:11px;border:1px solid var(--line);background:var(--panel2);color:var(--mut)}
+.badge.ok{color:var(--ok);border-color:#235c44}.badge.warn{color:var(--warn);border-color:#6a5222}.badge.bad{color:var(--bad);border-color:#6a2a31}
+.app{display:grid;grid-template-columns:340px 1fr;height:calc(100% - 52px)}
+aside{overflow:auto;border-right:1px solid var(--line);background:var(--panel);padding:8px}
+main{overflow:auto;padding:12px;display:flex;flex-direction:column;gap:12px}
+details{background:var(--panel2);border:1px solid var(--line);border-radius:8px;margin-bottom:8px}
+summary{cursor:pointer;padding:8px 10px;font-weight:600;list-style:none}
+summary::before{content:"▸ ";color:var(--acc)}details[open]>summary::before{content:"▾ "}
+.pb{padding:4px 10px 10px;display:flex;flex-direction:column;gap:8px}
+.row{display:flex;gap:8px;align-items:center}.row>label{flex:0 0 84px;color:var(--mut)}.row>*:not(label){flex:1;min-width:0}
+input,select,button{font:inherit;color:var(--txt);background:#10141a;border:1px solid var(--line);border-radius:6px;padding:5px 7px}
+input[type=range]{padding:0;accent-color:var(--acc)}input[type=checkbox]{flex:0}
+button{cursor:pointer;background:#232a35}button:hover{border-color:var(--acc)}
+button.pri{background:linear-gradient(180deg,#ffd24d,#f0a500);color:#1a1200;border-color:var(--acc);font-weight:700}
+button.dng{border-color:#6a2a31;color:var(--bad)}button:disabled{opacity:.4;cursor:not-allowed}
+.btns{display:flex;gap:6px;flex-wrap:wrap}.btns>*{flex:1}
+.drop{border:2px dashed var(--line);border-radius:10px;padding:16px;text-align:center;color:var(--mut);cursor:pointer;transition:.15s}
+.drop.over{border-color:var(--acc);color:var(--acc);background:#10202f}
+table{width:100%;border-collapse:collapse}th{font-weight:500;color:var(--mut);text-align:left;font-size:11px}
+td{padding:2px}td input,td select{width:100%;padding:3px 4px}tr.sel td{background:#14283d}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.ph{display:flex;justify-content:space-between;align-items:center;padding:6px 10px;border-bottom:1px solid var(--line);font-weight:600;gap:8px;flex-wrap:wrap}
+.ph small{color:var(--mut);font-weight:400}
+.views{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+canvas{display:block;width:100%;background:#000}
+.cw{position:relative;padding:8px;background:#0a0c10}
+.cw canvas{border-radius:4px}
+#stripOv{position:absolute;left:8px;top:8px;pointer-events:none;background:transparent}
+.transport{display:flex;gap:8px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px 10px;flex-wrap:wrap}
+.transport input[type=range]{flex:1;min-width:160px}
+.mono{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;color:var(--mut)}
+.warn{padding:8px 10px;border-radius:8px;border:1px solid #6a5222;background:#2a2212;color:var(--warn)}
+.bad{border-color:#6a2a31;background:#2a1417;color:var(--bad)}.okb{border-color:#235c44;background:#112219;color:var(--ok)}
+.prog{height:10px;background:#10141a;border:1px solid var(--line);border-radius:6px;overflow:hidden}.prog>div{height:100%;width:0;background:var(--acc)}
+.hint{color:var(--mut);font-size:11.5px}
+kbd{background:#10141a;border:1px solid var(--line);border-radius:4px;padding:0 4px;font-size:11px}
+@media(max-width:1100px){.app{grid-template-columns:1fr;height:auto}aside{border-right:0;border-bottom:1px solid var(--line)}.views{grid-template-columns:1fr}html,body{height:auto}}
+a.navlink{display:inline-block;text-decoration:none;color:#1a1200;background:linear-gradient(180deg,#ffd24d,#f0a500);border:1px solid var(--acc);border-radius:6px;padding:5px 10px;font-weight:700;text-align:center;flex:1}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand"><img class="logo" alt="DK EDITS VJ PLAYER" src="img/dk-logo.gif"><div class="bt"><span class="bn">LED MAPPER</span><span class="bs">Diamond wall calibration · shared live with the Player</span></div><span class="mono">8 × 500² → 4000×500</span></div>
+  <div class="btns" style="flex:0 0 auto">
+    <a class="navlink" href="index.html" title="Back to the strobe / video player">◀ Player</a><button id="btnSaveCfg">Save config</button><button id="btnLoadCfg">Load config</button><button id="btnReset" class="dng">Reset all</button>
+    <input type="file" id="cfgFile" accept=".json" hidden>
+  </div>
+  <div class="badges" id="badges"></div>
+</header>
+
+<div class="app">
+<aside>
+  <details open><summary>1 · Source</summary><div class="pb">
+    <div class="drop" id="drop">Drop a video here or click to browse<br><span class="hint">MP4, WebM, MOV — stays on your machine</span></div>
+    <input type="file" id="vidFile" accept="video/*" hidden>
+    <div class="row"><label>Source</label><select id="srcType"><option value="video">Uploaded video</option><option value="pattern">Test pattern</option></select></div>
+    <div class="row"><label>Pattern</label><select id="pattern">
+      <option value="numbers">Numbered cabinets + orientation arrows</option>
+      <option value="checker">Checkerboard</option>
+      <option value="hlines">Horizontal lines</option>
+      <option value="vlines">Vertical lines</option>
+      <option value="diag">Diagonal lines</option>
+      <option value="circle">Moving circles</option>
+      <option value="grid">Animated grid</option>
+    </select></div>
+    <div class="row"><label>Pattern length</label><input type="number" id="patDur" min="1" max="600" step="1"></div>
+    <div id="vidInfo" class="hint">No video loaded. A test pattern is playing.</div>
+  </div></details>
+
+  <details open><summary>2 · Master mapping</summary><div class="pb">
+    <div class="row"><label>Mode</label><select id="mode">
+      <option value="physical">Physical wall (spatial)</option>
+      <option value="strip">Strip 8:1 (sequential)</option></select></div>
+    <div class="hint" id="modeHint"></div>
+    <div class="row"><label>Fit</label><select id="fit"><option value="cover">Cover (fill, crop)</option><option value="contain">Contain (letterbox)</option><option value="stretch">Stretch</option></select></div>
+    <div class="row"><label>Zoom</label><input type="range" id="zoom" min="0.1" max="8" step="0.01"><input type="number" id="zoomN" step="0.01" style="max-width:70px;flex:0 0 70px"></div>
+    <div class="row"><label>Pan X</label><input type="range" id="panX" min="-1" max="1" step="0.001"><input type="number" id="panXN" step="0.001" style="max-width:70px;flex:0 0 70px"></div>
+    <div class="row"><label>Pan Y</label><input type="range" id="panY" min="-1" max="1" step="0.001"><input type="number" id="panYN" step="0.001" style="max-width:70px;flex:0 0 70px"></div>
+    <div class="btns"><button id="btnAuto" class="pri">Auto map</button><button id="btnFitReset">Reset zoom/pan</button></div>
+    <div class="hint">Master canvas: drag = pan, wheel = zoom, click = select cabinet, <kbd>Shift</kbd>+drag = move selected cabinet sampling.</div>
+  </div></details>
+
+  <details open><summary>3 · Cabinet calibration</summary><div class="pb">
+    <div class="row"><label>Rotation dir.</label><select id="rotDir"><option value="1">Clockwise (+45°)</option><option value="-1">Counter-clockwise (−45°)</option></select></div>
+    <div class="row"><label>Base angle°</label><input type="number" id="baseAngle" step="0.1"></div>
+    <div class="row"><label>Global scale</label><input type="range" id="cabScale" min="0.5" max="1.5" step="0.001"><input type="number" id="cabScaleN" step="0.001" style="max-width:70px;flex:0 0 70px"></div>
+    <table id="cabTable"><thead><tr><th>#</th><th>Label</th><th>X off</th><th>Y off</th><th>Scale</th><th>Orient</th></tr></thead><tbody></tbody></table>
+    <div class="btns"><button id="nudgeL">◀</button><button id="nudgeU">▲</button><button id="nudgeD">▼</button><button id="nudgeR">▶</button><button id="btnCabReset">Reset sel.</button></div>
+    <div class="hint">Offsets are in wall pixels (reference image units). <kbd>Alt</kbd>+arrows nudge (<kbd>Shift</kbd> ×10). Orient rotates the data written to a cabinet's tile (use if a cabinet is physically mounted rotated).</div>
+    <div class="row"><label>Numbering</label><select id="numPreset"><option value="">Preset…</option><option value="reading">Reading order (default)</option><option value="cols">Left → right columns</option><option value="rev">Reversed</option></select></div>
+  </div></details>
+
+  <details open><summary>4 · Wiring order (1×8 processor)</summary><div class="pb">
+    <div class="hint">Slot N = the N-th 500 px tile of the 4000×500 output → cabinet label connected N-th in the chain.</div>
+    <div id="wiring" style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px"></div>
+    <div class="btns"><button data-w="1,2,3,4,5,6,7,8">1→8</button><button data-w="8,7,6,5,4,3,2,1">8→1</button><button data-w="1,2,4,3,5,6,7,8">Snake rows</button><button data-w="5,1,3,6,8,4,2,7">By column</button></div>
+    <div id="wireMsg" class="hint"></div>
+  </div></details>
+
+  <details open><summary>5 · Export</summary><div class="pb">
+    <div class="row"><label>Output</label><input value="4000 × 500 px (1 row × 8 columns)" disabled></div>
+    <div class="row"><label>Format</label><select id="fmt"></select></div>
+    <div class="row"><label>Frame rate</label><select id="fps"><option>24</option><option>25</option><option selected>30</option><option>50</option><option>60</option></select></div>
+    <div class="row"><label>Bitrate Mbps</label><input type="number" id="bitrate" min="1" max="200" step="1"></div>
+    <div class="row"><label>Start (s)</label><input type="number" id="exStart" min="0" step="0.1"></div>
+    <div class="row"><label>End (s)</label><input type="number" id="exEnd" min="0" step="0.1"></div>
+    <div class="btns"><button id="btnExport" class="pri">Export video</button><button id="btnCancel" class="dng" disabled>Cancel</button></div>
+    <div class="prog"><div id="progBar"></div></div>
+    <div id="exMsg" class="hint">Export records in real time at 1× speed — keep this tab visible.</div>
+    <div id="exResult"></div>
+    <button id="btnPng">Save current output frame (PNG 4000×500)</button>
+  </div></details>
+
+  <details><summary>6 · Diagnostics</summary><div class="pb">
+    <div id="diag" class="mono"></div>
+    <div class="btns"><button id="btnSelfTest">Run mapping self-test</button></div>
+    <label class="row"><input type="checkbox" id="showOutlines"> <span>Cabinet outlines</span></label>
+    <label class="row"><input type="checkbox" id="showLabels"> <span>Cabinet numbers</span></label>
+    <label class="row"><input type="checkbox" id="showWiring"> <span>Wiring path overlay</span></label>
+  </div></details>
+</aside>
+
+<main>
+  <div id="banner"></div>
+  <div class="transport">
+    <button id="btnPlay" class="pri" style="min-width:70px">▶ Play</button>
+    <button id="btnStepB" title="Back 1 frame">⏮</button><button id="btnStepF" title="Forward 1 frame">⏭</button>
+    <input type="range" id="seek" min="0" max="1" step="0.001" value="0">
+    <span class="mono" id="timeLbl">0:00.000 / 0:00.000</span>
+    <label class="row" style="gap:4px"><input type="checkbox" id="loop"> loop</label>
+    <select id="rate" style="max-width:80px"><option>0.25</option><option>0.5</option><option selected>1</option><option>1.5</option><option>2</option></select>
+  </div>
+  <div class="views">
+    <section class="panel"><div class="ph">Master source <small id="masterInfo"></small></div><div class="cw"><canvas id="master"></canvas></div></section>
+    <section class="panel"><div class="ph">Physical LED wall (rebuilt from processor pixels) <small>8 diamonds · 2–2–3–1</small></div><div class="cw"><canvas id="wall"></canvas></div></section>
+  </div>
+  <section class="panel"><div class="ph">Processor output — 1 row × 8 columns <small>4000 × 500 · exactly what gets exported</small></div>
+    <div class="cw" id="stripWrap"><canvas id="out" width="4000" height="500"></canvas><canvas id="stripOv"></canvas></div></section>
+</main>
+</div>
+<video id="vid" playsinline muted preload="auto" style="display:none"></video>
+
+<script>
+"use strict";
+/* ============================================================
+   GEOMETRY  (measured from the reference image, 1836×1448 px)
+   Wall bounding box = 1244 × 1377 reference px; every cabinet is a
+   square with half-diagonal D = 207 ref px rotated 45°.
+   Layout 2–2–3–1:  1 2 / 3 4 / 5 6 7 / 8
+   ============================================================ */
+const REF={W:1244,H:1377,D:207,
+  cabs:[[325,207],[919,207],[414.5,531],[829,531],[208,739],[622,739],[1037,739],[622,1170]]};
+const SIDE=REF.D*Math.SQRT2, K0=SIDE/500;           // wall px per LED px
+const TILE=500,N=8,OUTW=4000,OUTH=500;
+const $=s=>document.querySelector(s);
+const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
+
+const defState=()=>({srcType:'pattern',pattern:'numbers',mode:'physical',fit:'cover',zoom:1,panX:0,panY:0,
+  rotDir:1,baseAngle:45,cabScale:1,
+  cabs:Array.from({length:8},(_,i)=>({dx:0,dy:0,scale:1,orient:0,label:i+1})),
+  wiring:[1,2,3,4,5,6,7,8],fps:30,bitrate:20,loop:true,rate:1,exStart:0,exEnd:0,patDur:10,sel:0,
+  showOutlines:true,showLabels:true,showWiring:true,fmt:'auto'});
+let S=defState();
+try{const j=JSON.parse(localStorage.getItem('dlvm_v4')||'null');if(j&&j.cabs&&j.cabs.length===8)S=Object.assign(defState(),j);}catch(e){}
+const save=()=>{try{localStorage.setItem('dlvm_v4',JSON.stringify(S));}catch(e){}};
+
+/* ---------- mapping math (shared by CPU preview + GPU uniforms) ---------- */
+function wallDims(){return S.mode==='strip'?{W:OUTW,H:OUTH}:{W:REF.W,H:REF.H};}
+function srcDims(){
+  if(S.srcType==='video'&&vid.videoWidth)return{w:vid.videoWidth,h:vid.videoHeight};
+  return{w:patCanvas.width,h:patCanvas.height};
+}
+function mapParams(){
+  const{W,H}=wallDims(),{w,h}=srcDims();let sx,sy;
+  if(S.fit==='stretch'){sx=W/w;sy=H/h;}
+  else{const a=W/w,b=H/h,s=S.fit==='cover'?Math.max(a,b):Math.min(a,b);sx=sy=s;}
+  return{W,H,vw:w,vh:h,sx:sx*S.zoom,sy:sy*S.zoom,px:S.panX,py:S.panY};      // sx,sy = wall px per source px
+}
+const wallToVid=(x,y,m)=>[m.vw/2+m.px*m.vw+(x-m.W/2)/m.sx, m.vh/2+m.py*m.vh+(y-m.H/2)/m.sy];
+const vidToWall=(vx,vy,m)=>[(vx-m.vw/2-m.px*m.vw)*m.sx+m.W/2,(vy-m.vh/2-m.py*m.vh)*m.sy+m.H/2];
+const thetaOf=c=>(S.rotDir*S.baseAngle+c.orient)*Math.PI/180;
+
+/* slots[s] = cabinet wired to processor tile s.  samp = where it SAMPLES the master;
+   phys = where it physically IS (used to rebuild the wall from output pixels). */
+function wiringValid(){
+  const labs=S.cabs.map(c=>c.label),setL=new Set(labs),setW=new Set(S.wiring);
+  return setL.size===8&&setW.size===8&&S.wiring.every(w=>setL.has(w));
+}
+function slotList(){
+  const ok=wiringValid(),out=[];
+  for(let s=0;s<N;s++){
+    let ci=ok?S.cabs.findIndex(c=>c.label===S.wiring[s]):s;if(ci<0)ci=s;
+    const c=S.cabs[ci],r=REF.cabs[ci],th=thetaOf(c);
+    out.push({s,ci,label:c.label,th,
+      samp:{cx:r[0]+c.dx,cy:r[1]+c.dy,k:K0*S.cabScale*c.scale},
+      phys:{cx:r[0],cy:r[1],k:K0}});
+  }
+  return out;
+}
+/* tile pixel (u,v in 0..500, pixel centre conv.) → wall coordinate */
+function tileToWall(sl,u,v,st){
+  const lx=u-250,ly=v-250,c=Math.cos(sl.th),s=Math.sin(sl.th),p=st||sl.samp;
+  return[p.cx+p.k*(c*lx-s*ly),p.cy+p.k*(s*lx+c*ly)];
+}
+
+/* ============================================================ WebGL engine */
+const outC=$('#out'),vid=$('#vid');
+let gl=null,glInfo={},prog,tex,loc={};
+const VS='attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}';
+const FS=`precision highp float;
+uniform sampler2D uTex;uniform vec2 uVid,uWall,uSc,uPan;uniform vec4 uCab[8];uniform int uMode;
+vec3 smp(vec2 o){
+  vec2 w;
+  if(uMode==1){w=o;}
+  else{
+    float slot=floor(o.x/500.0);
+    vec2 l=vec2(o.x-slot*500.0-250.0,o.y-250.0);
+    vec4 c=vec4(0.0);
+    for(int i=0;i<8;i++){if(float(i)==slot)c=uCab[i];}
+    float cs=cos(c.w),sn=sin(c.w);
+    w=c.xy+c.z*vec2(cs*l.x-sn*l.y,sn*l.x+cs*l.y);   // forward map: tile → wall
+  }
+  vec2 v=uVid*0.5+uPan*uVid+(w-uWall*0.5)/uSc;       // wall → source pixels
+  vec2 uv=v/uVid;
+  float inside=step(0.0,uv.x)*step(uv.x,1.0)*step(0.0,uv.y)*step(uv.y,1.0);
+  return texture2D(uTex,clamp(uv,0.0,1.0)).rgb*inside;
+}
+void main(){
+  vec2 o=vec2(gl_FragCoord.x,500.0-gl_FragCoord.y);
+  vec3 c=smp(o+vec2(-.25,-.25))+smp(o+vec2(.25,-.25))+smp(o+vec2(-.25,.25))+smp(o+vec2(.25,.25));
+  gl_FragColor=vec4(c*0.25,1.0);
+}`;
+function initGL(){
+  try{gl=outC.getContext('webgl',{preserveDrawingBuffer:true,antialias:false,alpha:false});}catch(e){}
+  if(!gl)return false;
+  const mk=(t,src)=>{const s=gl.createShader(t);gl.shaderSource(s,src);gl.compileShader(s);
+    if(!gl.getShaderParameter(s,gl.COMPILE_STATUS))throw new Error(gl.getShaderInfoLog(s));return s;};
+  prog=gl.createProgram();gl.attachShader(prog,mk(gl.VERTEX_SHADER,VS));gl.attachShader(prog,mk(gl.FRAGMENT_SHADER,FS));
+  gl.linkProgram(prog);gl.useProgram(prog);
+  const b=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,b);
+  gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,1,1]),gl.STATIC_DRAW);
+  const a=gl.getAttribLocation(prog,'p');gl.enableVertexAttribArray(a);gl.vertexAttribPointer(a,2,gl.FLOAT,false,0,0);
+  ['uTex','uVid','uWall','uSc','uPan','uCab','uMode'].forEach(n=>loc[n]=gl.getUniformLocation(prog,n));
+  tex=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,tex);
+  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
+  const vp=gl.getParameter(gl.MAX_VIEWPORT_DIMS);
+  glInfo={maxTex:gl.getParameter(gl.MAX_TEXTURE_SIZE),vp0:vp[0],vp1:vp[1],
+          dbg:(gl.getExtension('WEBGL_debug_renderer_info')?gl.getParameter(gl.getExtension('WEBGL_debug_renderer_info').UNMASKED_RENDERER_WEBGL):'n/a')};
+  gl.viewport(0,0,OUTW,OUTH);
+  return true;
+}
+let texDims=[0,0],srcOK=false;
+function renderOutput(){
+  if(!gl)return;
+  const el=(S.srcType==='video')?(vid.videoWidth&&vid.readyState>=2?vid:null):patCanvas;
+  if(!el){srcOK=false;gl.clearColor(0,0,0,1);gl.clear(gl.COLOR_BUFFER_BIT);return;}
+  srcOK=true;
+  gl.bindTexture(gl.TEXTURE_2D,tex);
+  gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,el);
+  const m=mapParams(),sl=slotList(),u=new Float32Array(32);
+  sl.forEach((q,i)=>{u[i*4]=q.samp.cx;u[i*4+1]=q.samp.cy;u[i*4+2]=q.samp.k;u[i*4+3]=q.th;});
+  gl.uniform1i(loc.uTex,0);gl.uniform2f(loc.uVid,m.vw,m.vh);gl.uniform2f(loc.uWall,m.W,m.H);
+  gl.uniform2f(loc.uSc,m.sx,m.sy);gl.uniform2f(loc.uPan,m.px,m.py);
+  gl.uniform4fv(loc.uCab,u);gl.uniform1i(loc.uMode,S.mode==='strip'?1:0);
+  gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
+}
+
+/* ============================================================ Test patterns */
+const patCanvas=document.createElement('canvas'),pctx=patCanvas.getContext('2d');
+function sizePattern(){
+  const w=S.mode==='strip'?OUTW:1866,h=S.mode==='strip'?OUTH:2066;
+  if(patCanvas.width!==w||patCanvas.height!==h){patCanvas.width=w;patCanvas.height=h;}
+}
+function drawPattern(t){
+  sizePattern();
+  const{W,H}=wallDims(),c=pctx,k=patCanvas.width/W;
+  c.setTransform(k,0,0,k,0,0);c.fillStyle='#0b0c10';c.fillRect(0,0,W,H);
+  const strip=S.mode==='strip',unit=strip?25:50,lw=strip?3:2;
+  const cells=[];  // {path fn, cx, cy, label, hue}
+  const lab=s=>S.wiring[s];
+  if(strip)for(let s=0;s<N;s++)cells.push({s,x:s*500,y:0,cx:s*500+250,cy:250,label:lab(s),size:500});
+  else for(let i=0;i<N;i++)cells.push({i,cx:REF.cabs[i][0],cy:REF.cabs[i][1],label:S.cabs[i].label,size:SIDE});
+  const poly=(cl)=>{c.beginPath();if(strip){c.rect(cl.x,cl.y,500,500);}else{const[x,y]=[cl.cx,cl.cy],d=REF.D;c.moveTo(x,y-d);c.lineTo(x+d,y);c.lineTo(x,y+d);c.lineTo(x-d,y);c.closePath();}};
+  const P=t=>t;
+  switch(S.pattern){
+    case 'numbers':{
+      cells.forEach((cl,i)=>{poly(cl);c.fillStyle=`hsl(${(cl.label-1)*45},55%,30%)`;c.fill();});
+      // continuous guide grid across the whole canvas
+      c.strokeStyle='rgba(255,255,255,.22)';c.lineWidth=lw;c.beginPath();
+      for(let x=0;x<=W;x+=100){c.moveTo(x,0);c.lineTo(x,H);}for(let y=0;y<=H;y+=100){c.moveTo(0,y);c.lineTo(W,y);}c.stroke();
+      cells.forEach(cl=>{poly(cl);c.strokeStyle='#fff';c.lineWidth=strip?4:3;c.stroke();
+        c.fillStyle='#fff';c.font=`700 ${cl.size*.5}px system-ui`;c.textAlign='center';c.textBaseline='middle';
+        c.fillText(cl.label,cl.cx,cl.cy+cl.size*.04);
+        // upright arrow = physical "up" of the wall
+        const a=cl.size*.14,ax=cl.cx,ay=cl.cy-cl.size*.3;
+        c.fillStyle='#ffd24d';c.beginPath();c.moveTo(ax,ay-a);c.lineTo(ax+a*.7,ay+a*.5);c.lineTo(ax-a*.7,ay+a*.5);c.closePath();c.fill();});
+      break;}
+    case 'checker':{
+      for(let y=0;y*unit<H;y++)for(let x=0;x*unit<W;x++){c.fillStyle=((x+y)&1)?'#f2f2f2':'#151515';c.fillRect(x*unit,y*unit,unit,unit);}
+      break;}
+    case 'hlines':{
+      for(let y=0;y<H;y+=unit*.8){c.fillStyle=(Math.round(y/(unit*.8))%5===0)?'#ff5050':'#fff';c.fillRect(0,y,W,lw*(strip?1:1.5));}
+      break;}
+    case 'vlines':{
+      for(let x=0;x<W;x+=unit*.8){c.fillStyle=(Math.round(x/(unit*.8))%5===0)?'#4da3ff':'#fff';c.fillRect(x,0,lw*(strip?1:1.5),H);}
+      break;}
+    case 'diag':{
+      c.lineWidth=lw*1.5;const gap=strip?60:90;
+      c.strokeStyle='#fff';c.beginPath();for(let o=-H;o<W+H;o+=gap){c.moveTo(o,0);c.lineTo(o+H,H);}c.stroke();
+      c.strokeStyle='#ffb347';c.beginPath();for(let o=0;o<W+H;o+=gap){c.moveTo(o,0);c.lineTo(o-H,H);}c.stroke();
+      break;}
+    case 'circle':{
+      c.strokeStyle='rgba(255,255,255,.15)';c.lineWidth=lw;c.beginPath();for(let x=0;x<=W;x+=100){c.moveTo(x,0);c.lineTo(x,H);}for(let y=0;y<=H;y+=100){c.moveTo(0,y);c.lineTo(W,y);}c.stroke();
+      const r=strip?H*.22:130,ph=t*.9;
+      const pts=strip?[[W/2+Math.sin(ph)*(W/2-r-10),H/2+Math.sin(ph*2.3)*(H/2-r-10)],[W/2+Math.cos(ph*.7)*(W/2-r-10),H/2+Math.cos(ph*1.9)*(H/2-r-10)]]
+        :[[W/2+Math.sin(ph)*(W/2-r),H/2+Math.sin(ph*.8)*(H/2-r)],[W/2+Math.cos(ph*.6)*(W/2-r),H/2+Math.cos(ph*1.1)*(H/2-r)]];
+      pts.forEach((p,i)=>{c.fillStyle=i?'#ff5050':'#4da3ff';c.beginPath();c.arc(p[0],p[1],r,0,7);c.fill();c.strokeStyle='#fff';c.lineWidth=lw*2;c.stroke();});
+      break;}
+    case 'grid':{
+      const g=strip?50:80,off=(t*40)%g;
+      c.strokeStyle='#7fe3a1';c.lineWidth=lw*1.5;c.beginPath();
+      for(let x=-g+off;x<W+g;x+=g){c.moveTo(x,0);c.lineTo(x,H);}for(let y=-g+off;y<H+g;y+=g){c.moveTo(0,y);c.lineTo(W,y);}c.stroke();
+      c.strokeStyle='#ff5050';c.lineWidth=lw*3;c.beginPath();c.moveTo(0,H/2);c.lineTo(W,H/2);c.moveTo(W/2,0);c.lineTo(W/2,H);c.stroke();
+      break;}
+  }
+  if(S.pattern!=='numbers'){c.strokeStyle='rgba(255,60,60,.55)';c.lineWidth=lw;cells.forEach(cl=>{poly(cl);c.stroke();});}
+}
+
+/* ============================================================ Transport */
+let playing=false,tPat=0,lastTs=performance.now();
+const isVid=()=>S.srcType==='video'&&vid.videoWidth>0;
+const duration=()=>isVid()?(vid.duration||0):S.patDur;
+const curTime=()=>isVid()?vid.currentTime:tPat;
+function setTime(t){t=clamp(t,0,duration());if(isVid())vid.currentTime=t;else tPat=t;}
+function setPlaying(p){
+  playing=p;
+  if(isVid()){if(p)vid.play().catch(()=>{});else vid.pause();}
+  $('#btnPlay').textContent=p?'⏸ Pause':'▶ Play';
+}
+const fmtT=t=>{const m=Math.floor(t/60),s=t-m*60;return m+':'+s.toFixed(3).padStart(6,'0');};
+vid.addEventListener('ended',()=>{if(!exp){playing=false;$('#btnPlay').textContent='▶ Play';}});
+
+/* ---------- video loading ---------- */
+function loadVideo(file){
+  if(!file)return;
+  if(!file.type.startsWith('video/')&&!/\.(mp4|webm|mov|m4v|mkv|ogv)$/i.test(file.name)){banner('That file does not look like a video.','bad');return;}
+  const url=URL.createObjectURL(file);
+  vid.src=url;vid.load();vid.loop=S.loop;
+  vid.onloadedmetadata=()=>{
+    S.srcType='video';S.zoom=1;S.panX=S.panY=0;S.exStart=0;S.exEnd=+vid.duration.toFixed(3);
+    $('#vidInfo').innerHTML=`<b>${file.name}</b><br>${vid.videoWidth}×${vid.videoHeight} px · ${vid.duration.toFixed(2)} s`;
+    banner('','');if(vid.videoWidth*vid.videoHeight>8294400)banner('Large video — decoding 4K+ may be slow; preview will still map correctly.','warn');
+    syncUI();save();setPlaying(false);vid.currentTime=0;
+  };
+  vid.onerror=()=>banner('This browser cannot decode that video file (codec unsupported). Try an MP4 (H.264) or WebM file.','bad');
+}
+
+/* ============================================================ UI sync */
+function banner(msg,kind){const b=$('#banner');b.innerHTML=msg?`<div class="warn ${kind==='bad'?'bad':kind==='ok'?'okb':''}">${msg}</div>`:'';}
+const ids=['srcType','pattern','patDur','mode','fit','rotDir','baseAngle','fps','bitrate','exStart','exEnd','rate'];
+function syncUI(){
+  ids.forEach(k=>{const e=$('#'+k);if(e)e.value=S[k];});
+  $('#zoom').value=S.zoom;$('#zoomN').value=S.zoom.toFixed(3);$('#panX').value=S.panX;$('#panXN').value=S.panX.toFixed(3);
+  $('#panY').value=S.panY;$('#panYN').value=S.panY.toFixed(3);$('#cabScale').value=S.cabScale;$('#cabScaleN').value=S.cabScale.toFixed(3);
+  $('#loop').checked=S.loop;$('#showOutlines').checked=S.showOutlines;$('#showLabels').checked=S.showLabels;$('#showWiring').checked=S.showWiring;
+  $('#modeHint').textContent=S.mode==='physical'
+    ?'One master picture covers the whole 1244×1377 wall footprint; every diamond samples its own rotated region of it.'
+    :'The master is stretched over the 4000×500 strip and cut into 8 consecutive 500×500 tiles (no spatial wall layout).';
+  buildCabTable();buildWiring();
+}
+function buildCabTable(){
+  const tb=$('#cabTable tbody');tb.innerHTML='';
+  S.cabs.forEach((c,i)=>{
+    const tr=document.createElement('tr');if(i===S.sel)tr.className='sel';
+    tr.innerHTML=`<td>${i+1}</td><td><input type="number" min="1" max="8" value="${c.label}" data-f="label"></td>
+      <td><input type="number" step="1" value="${c.dx}" data-f="dx"></td><td><input type="number" step="1" value="${c.dy}" data-f="dy"></td>
+      <td><input type="number" step="0.001" value="${c.scale}" data-f="scale"></td>
+      <td><select data-f="orient">${[0,90,180,270].map(a=>`<option ${a===c.orient?'selected':''} value="${a}">${a}°</option>`).join('')}</select></td>`;
+    tr.addEventListener('pointerdown',()=>{if(S.sel!==i){S.sel=i;[...tb.children].forEach((r,j)=>r.className=j===i?'sel':'');}});
+    tr.querySelectorAll('input,select').forEach(inp=>inp.addEventListener('change',()=>{
+      const v=parseFloat(inp.value);S.cabs[i][inp.dataset.f]=isFinite(v)?v:0;save();syncUI();}));
+    tb.appendChild(tr);
+  });
+}
+function buildWiring(){
+  const w=$('#wiring');w.innerHTML='';
+  for(let s=0;s<N;s++){
+    const d=document.createElement('div');d.innerHTML=`<div class="hint">Slot ${s+1}</div><select>${S.cabs.map(c=>`<option ${c.label===S.wiring[s]?'selected':''} value="${c.label}">Cab ${c.label}</option>`).join('')}</select>`;
+    d.querySelector('select').addEventListener('change',e=>{S.wiring[s]=+e.target.value;save();buildWiring();});
+    w.appendChild(d);
+  }
+  const ok=wiringValid();
+  $('#wireMsg').innerHTML=ok?'<span style="color:var(--ok)">Wiring valid: every cabinet used exactly once.</span>':'<span style="color:var(--bad)">Invalid: duplicate/missing cabinet labels or slots — falling back to slot = cabinet index.</span>';
+}
+/* control wiring */
+function bind(id,key,num){
+  $('#'+id).addEventListener('input',e=>{
+    let v=e.target.value;if(num!==false)v=parseFloat(v);if(num!==false&&!isFinite(v))return;S[key]=v;save();syncUI();});
+}
+['srcType','pattern','mode','fit'].forEach(k=>bind(k,k,false));
+['patDur','baseAngle','fps','bitrate','exStart','exEnd'].forEach(k=>bind(k,k));
+$('#rotDir').addEventListener('input',e=>{S.rotDir=+e.target.value;save();});
+$('#rate').addEventListener('input',e=>{S.rate=+e.target.value;vid.playbackRate=S.rate;save();});
+[['zoom','zoom'],['zoomN','zoom'],['panX','panX'],['panXN','panX'],['panY','panY'],['panYN','panY'],['cabScale','cabScale'],['cabScaleN','cabScale']].forEach(([id,k])=>{
+  $('#'+id).addEventListener('input',e=>{const v=parseFloat(e.target.value);if(!isFinite(v))return;S[k]=v;save();
+    if(!e.target.id.endsWith('N')){$('#'+id+'N')&&($('#'+id+'N').value=v.toFixed(3));}else{$('#'+id.slice(0,-1)).value=v;}});});
+['showOutlines','showLabels','showWiring','loop'].forEach(k=>$('#'+k).addEventListener('change',e=>{S[k]=e.target.checked;if(k==='loop')vid.loop=S.loop;save();}));
+$('#srcType').addEventListener('change',()=>{if(S.srcType==='video'&&!vid.videoWidth){S.srcType='pattern';syncUI();banner('Load a video first.','warn');}else setPlaying(false);});
+$('#btnAuto').onclick=()=>{S.zoom=1;S.panX=S.panY=0;S.fit='cover';S.mode='physical';S.rotDir=1;S.baseAngle=45;S.cabScale=1;
+  S.cabs.forEach((c,i)=>{c.dx=c.dy=0;c.scale=1;c.orient=0;c.label=i+1;});S.wiring=[1,2,3,4,5,6,7,8];save();syncUI();banner('Automatic mapping applied: reference geometry, cover-fit, 45° cabinets, wiring 1→8.','ok');};
+$('#btnFitReset').onclick=()=>{S.zoom=1;S.panX=S.panY=0;save();syncUI();};
+$('#btnCabReset').onclick=()=>{const c=S.cabs[S.sel];c.dx=c.dy=0;c.scale=1;c.orient=0;save();syncUI();};
+$('#btnReset').onclick=()=>{if(confirm('Reset all settings?')){S=Object.assign(defState(),{srcType:S.srcType});save();syncUI();}};
+const nudge=(dx,dy)=>{const c=S.cabs[S.sel];c.dx+=dx;c.dy+=dy;save();syncUI();};
+$('#nudgeL').onclick=()=>nudge(-1,0);$('#nudgeR').onclick=()=>nudge(1,0);$('#nudgeU').onclick=()=>nudge(0,-1);$('#nudgeD').onclick=()=>nudge(0,1);
+$('#numPreset').onchange=e=>{
+  const v=e.target.value;if(!v)return;
+  const L=v==='reading'?[1,2,3,4,5,6,7,8]:v==='rev'?[8,7,6,5,4,3,2,1]:[2,7,3,6,1,4,8,5];   // cols: by x-position of each cabinet
+  S.cabs.forEach((c,i)=>c.label=L[i]);S.wiring=[1,2,3,4,5,6,7,8];e.target.value='';save();syncUI();
+};
+document.querySelectorAll('[data-w]').forEach(b=>b.onclick=()=>{S.wiring=b.dataset.w.split(',').map(Number);save();buildWiring();});
+
+/* ============================================================ Canvases / drawing */
+const mC=$('#master'),wC=$('#wall'),ov=$('#stripOv');
+const mX=mC.getContext('2d'),wX=wC.getContext('2d'),oX=ov.getContext('2d');
+const dpr=()=>Math.min(window.devicePixelRatio||1,2);
+function fitCanvas(c,aspect){const w=Math.max(100,c.parentElement.clientWidth-16),d=dpr();
+  c.style.width=w+'px';c.style.height=(w/aspect)+'px';c.width=Math.round(w*d);c.height=Math.round(w/aspect*d);}
+let layoutKey='';
+function layout(){
+  const sd=srcDims(),ma=clamp(sd.w/sd.h,0.7,1.8),pad=40,wa=(REF.W+2*pad)/(REF.H+2*pad);
+  const strW=Math.max(100,$('#stripWrap').clientWidth-16);
+  const key=[ma.toFixed(3),mC.parentElement.clientWidth,wC.parentElement.clientWidth,strW,dpr()].join();
+  if(key===layoutKey)return;layoutKey=key;
+  fitCanvas(mC,ma);fitCanvas(wC,wa);
+  const d=dpr();ov.style.width=strW+'px';ov.style.height=(strW/8)+'px';ov.width=Math.round(strW*d);ov.height=Math.round(strW/8*d);
+}
+window.addEventListener('resize',()=>{layoutKey='';});
+const polyPath=(x,pts)=>{x.beginPath();pts.forEach((p,i)=>i?x.lineTo(p[0],p[1]):x.moveTo(p[0],p[1]));x.closePath();};
+function tileCornersWall(sl,m){
+  if(S.mode==='strip'){const x0=sl.s*500;return[[x0,0],[x0+500,0],[x0+500,500],[x0,500]];}
+  return[[0,0],[500,0],[500,500],[0,500]].map(p=>tileToWall(sl,p[0],p[1]));
+}
+let mView={sc:1,ox:0,oy:0,m:null,sl:null};
+function drawMaster(sl,m){
+  const W=mC.width,H=mC.height,x=mX,d=dpr();
+  x.setTransform(1,0,0,1,0,0);x.fillStyle='#07080b';x.fillRect(0,0,W,H);
+  const sc=Math.min(W/m.vw,H/m.vh),ox=(W-m.vw*sc)/2,oy=(H-m.vh*sc)/2;
+  mView={sc,ox,oy,m,sl};
+  const el=(S.srcType==='video'&&isVid())?vid:patCanvas;
+  try{x.drawImage(el,ox,oy,m.vw*sc,m.vh*sc);}catch(e){}
+  const P=(wx,wy)=>{const v=wallToVid(wx,wy,m);return[ox+v[0]*sc,oy+v[1]*sc];};
+  x.lineWidth=2*d;x.setLineDash([8*d,6*d]);x.strokeStyle='rgba(255,255,255,.55)';
+  polyPath(x,[[0,0],[m.W,0],[m.W,m.H],[0,m.H]].map(p=>P(p[0],p[1])));x.stroke();x.setLineDash([]);
+  sl.forEach(s=>{
+    const pts=tileCornersWall(s,m).map(p=>P(p[0],p[1]));
+    polyPath(x,pts);x.fillStyle=s.ci===S.sel?'rgba(255,210,77,.18)':'rgba(232,74,63,.10)';x.fill();
+    x.strokeStyle=s.ci===S.sel?'#ffd24d':'#e84a3f';x.lineWidth=(s.ci===S.sel?3:2)*d;x.stroke();
+    if(S.showLabels){const cx=pts.reduce((a,p)=>a+p[0],0)/4,cy=pts.reduce((a,p)=>a+p[1],0)/4;
+      x.font=`700 ${16*d}px system-ui`;x.textAlign='center';x.textBaseline='middle';x.lineWidth=4*d;x.strokeStyle='#000';x.strokeText(s.label,cx,cy);x.fillStyle='#fff';x.fillText(s.label,cx,cy);}
+  });
+  $('#masterInfo').textContent=`${m.vw}×${m.vh} · zoom ${S.zoom.toFixed(2)}`;
+}
+function drawWall(sl){
+  const W=wC.width,H=wC.height,x=wX,d=dpr(),pad=40,ps=Math.min(W/(REF.W+2*pad),H/(REF.H+2*pad));
+  x.setTransform(1,0,0,1,0,0);x.fillStyle='#0a0c10';x.fillRect(0,0,W,H);
+  const ox=(W-REF.W*ps)/2,oy=(H-REF.H*ps)/2;
+  x.imageSmoothingEnabled=true;x.imageSmoothingQuality='high';
+  sl.forEach(s=>{   // inverse of the export transform: output tile pixels → physical diamond
+    x.save();x.translate(ox+s.phys.cx*ps,oy+s.phys.cy*ps);x.rotate(s.th);x.scale(s.phys.k*ps,s.phys.k*ps);
+    x.drawImage(outC,s.s*500,0,500,500,-250,-250,500,500);x.restore();});
+  const Dd=REF.D*ps;
+  sl.forEach(s=>{const cx=ox+s.phys.cx*ps,cy=oy+s.phys.cy*ps;
+    if(S.showOutlines){polyPath(x,[[cx,cy-Dd],[cx+Dd,cy],[cx,cy+Dd],[cx-Dd,cy]]);x.strokeStyle=s.ci===S.sel?'#ffd24d':'#e84a3f';x.lineWidth=(s.ci===S.sel?3:2)*d;x.stroke();}
+    if(S.showLabels){x.font=`700 ${22*d}px system-ui`;x.textAlign='center';x.textBaseline='middle';x.lineWidth=5*d;x.strokeStyle='#000';x.strokeText(s.label,cx,cy+Dd*.62);x.fillStyle='#fff';x.fillText(s.label,cx,cy+Dd*.62);}
+  });
+  if(S.showWiring){x.strokeStyle='rgba(77,163,255,.9)';x.fillStyle='#4da3ff';x.lineWidth=2*d;x.beginPath();
+    sl.forEach((s,i)=>{const cx=ox+s.phys.cx*ps,cy=oy+s.phys.cy*ps;i?x.lineTo(cx,cy):x.moveTo(cx,cy);});x.stroke();
+    x.font=`600 ${12*d}px system-ui`;x.textAlign='center';
+    sl.forEach((s,i)=>{const cx=ox+s.phys.cx*ps,cy=oy+s.phys.cy*ps;x.beginPath();x.arc(cx,cy,9*d,0,7);x.fillStyle='#4da3ff';x.fill();x.fillStyle='#1a1200';x.textBaseline='middle';x.fillText(i+1,cx,cy+.5*d);});}
+}
+function drawStripOv(sl){
+  const W=ov.width,H=ov.height,x=oX,d=dpr();x.clearRect(0,0,W,H);
+  x.strokeStyle='rgba(255,255,255,.55)';x.lineWidth=1.5*d;x.setLineDash([6*d,4*d]);
+  for(let i=1;i<N;i++){x.beginPath();x.moveTo(W*i/N,0);x.lineTo(W*i/N,H);x.stroke();}x.setLineDash([]);
+  if(!S.showLabels)return;x.font=`600 ${12*d}px system-ui`;x.textBaseline='top';x.textAlign='left';
+  sl.forEach((s,i)=>{const t=`Slot ${i+1} · Cab ${s.label}`,px=W*i/N+6*d;x.lineWidth=3*d;x.strokeStyle='#000';x.strokeText(t,px,5*d);x.fillStyle='#fff';x.fillText(t,px,5*d);});
+}
+
+/* ---------- master canvas interaction ---------- */
+let drag=null;
+function pickCab(cx,cy){
+  const{sc,ox,oy,m,sl}=mView;if(!m||!sl)return-1;
+  const vx=(cx-ox)/sc,vy=(cy-oy)/sc,w=vidToWall(vx,vy,m);
+  for(const s of sl){
+    if(S.mode==='strip'){if(w[0]>=s.s*500&&w[0]<s.s*500+500&&w[1]>=0&&w[1]<=500)return s.ci;}
+    else{const c=Math.cos(-s.th),sn=Math.sin(-s.th),dx=w[0]-s.samp.cx,dy=w[1]-s.samp.cy;
+      const lx=(c*dx-sn*dy)/s.samp.k,ly=(sn*dx+c*dy)/s.samp.k;if(Math.abs(lx)<=250&&Math.abs(ly)<=250)return s.ci;}
+  }
+  return-1;
+}
+mC.addEventListener('pointerdown',e=>{mC.setPointerCapture(e.pointerId);const r=mC.getBoundingClientRect(),k=mC.width/r.width;
+  drag={x:e.clientX,y:e.clientY,cx:(e.clientX-r.left)*k,cy:(e.clientY-r.top)*k,moved:false,shift:e.shiftKey,k};});
+mC.addEventListener('pointermove',e=>{
+  if(!drag)return;const dxp=e.clientX-drag.x,dyp=e.clientY-drag.y;if(Math.hypot(dxp,dyp)>3)drag.moved=true;if(!drag.moved)return;
+  const{sc,m}=mView;if(!m)return;const dvx=dxp*drag.k/sc,dvy=dyp*drag.k/sc;drag.x=e.clientX;drag.y=e.clientY;
+  if(drag.shift&&S.mode!=='strip'){const c=S.cabs[S.sel];c.dx=+(c.dx+dvx*m.sx).toFixed(2);c.dy=+(c.dy+dvy*m.sy).toFixed(2);}
+  else{S.panX+=dvx/m.vw;S.panY+=dvy/m.vh;}
+  syncSliders();});
+mC.addEventListener('pointerup',e=>{if(drag&&!drag.moved){const i=pickCab(drag.cx,drag.cy);if(i>=0){S.sel=i;syncUI();}}
+  if(drag&&drag.moved){save();syncUI();}drag=null;});
+mC.addEventListener('wheel',e=>{e.preventDefault();S.zoom=clamp(S.zoom*Math.exp(-e.deltaY*0.0015),0.1,8);save();syncSliders();},{passive:false});
+function syncSliders(){$('#zoom').value=S.zoom;$('#zoomN').value=S.zoom.toFixed(3);$('#panX').value=S.panX;$('#panXN').value=S.panX.toFixed(3);$('#panY').value=S.panY;$('#panYN').value=S.panY.toFixed(3);}
+
+/* ============================================================ Transport wiring */
+$('#btnPlay').onclick=()=>{if(!isVid()&&S.srcType==='video'){return;}
+  if(!playing&&curTime()>=duration()-0.001)setTime(0);setPlaying(!playing);};
+const stepFrame=dir=>{setPlaying(false);setTime(curTime()+dir/(+S.fps||30));};
+$('#btnStepF').onclick=()=>stepFrame(1);$('#btnStepB').onclick=()=>stepFrame(-1);
+let seeking=false;
+$('#seek').addEventListener('pointerdown',()=>seeking=true);window.addEventListener('pointerup',()=>seeking=false);
+$('#seek').addEventListener('input',e=>setTime(parseFloat(e.target.value)*duration()));
+function updateTimeline(){const du=duration(),t=curTime();if(!seeking&&du>0)$('#seek').value=t/du;$('#timeLbl').textContent=fmtT(t)+' / '+fmtT(du);}
+window.addEventListener('keydown',e=>{
+  const tg=e.target.tagName;if(tg==='INPUT'||tg==='SELECT'||tg==='TEXTAREA')return;
+  if(e.code==='Space'){e.preventDefault();$('#btnPlay').click();}
+  else if(e.key.startsWith('Arrow')){e.preventDefault();
+    if(e.altKey){const n=e.shiftKey?10:1;nudge(e.key==='ArrowLeft'?-n:e.key==='ArrowRight'?n:0,e.key==='ArrowUp'?-n:e.key==='ArrowDown'?n:0);}
+    else if(e.key==='ArrowLeft')stepFrame(-1);else if(e.key==='ArrowRight')stepFrame(1);}
+});
+const drop=$('#drop');
+drop.onclick=()=>$('#vidFile').click();$('#vidFile').onchange=e=>loadVideo(e.target.files[0]);
+['dragenter','dragover'].forEach(ev=>window.addEventListener(ev,e=>{e.preventDefault();drop.classList.add('over');}));
+['dragleave','drop'].forEach(ev=>window.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove('over');}));
+window.addEventListener('drop',e=>{const f=e.dataTransfer&&e.dataTransfer.files[0];if(f)loadVideo(f);});
+
+/* config / png */
+function dl(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},2000);}
+$('#btnSaveCfg').onclick=()=>dl(new Blob([JSON.stringify(S,null,2)],{type:'application/json'}),'dk-edits-wall-config.json');
+$('#btnLoadCfg').onclick=()=>$('#cfgFile').click();
+$('#cfgFile').onchange=e=>{const f=e.target.files[0];if(!f)return;f.text().then(t=>{try{const j=JSON.parse(t);if(!j.cabs||j.cabs.length!==8)throw new Error('config must contain 8 cabinets');
+  const srcType=S.srcType;S=Object.assign(defState(),j,{srcType});save();syncUI();banner('Configuration loaded.','ok');}catch(err){banner('Invalid config: '+err.message,'bad');}});};
+$('#btnPng').onclick=()=>{if(!srcOK){banner('No source to capture yet.','warn');return;}renderOutput();outC.toBlob(b=>dl(b,'dk-edits-output-4000x500.png'),'image/png');};
+
+/* ============================================================ Compatibility */
+const MIME_LIST=[
+  ['video/mp4;codecs=avc1.64002A','MP4 · H.264 High@4.2','mp4'],['video/mp4;codecs=avc1.640033','MP4 · H.264 High@5.1','mp4'],
+  ['video/mp4;codecs=avc1.4D402A','MP4 · H.264 Main@4.2','mp4'],['video/mp4','MP4 · browser default codec','mp4'],
+  ['video/webm;codecs=vp9','WebM · VP9','webm'],['video/webm;codecs=vp8','WebM · VP8','webm'],['video/webm','WebM · browser default','webm']];
+let mimes=[],compat={webgl:false,res:false,rec:false,h264enc:null};
+function runCompat(){
+  const badges=[],add=(t,k)=>badges.push(`<span class="badge ${k}">${t}</span>`);
+  compat.webgl=initGL();
+  if(!compat.webgl){add('WebGL ✕','bad');banner('WebGL is not available in this browser, so the mapping engine cannot run. Use a current Chrome, Edge, Firefox or Safari with hardware acceleration enabled.','bad');}
+  else{add('WebGL ✓','ok');compat.res=glInfo.maxTex>=64&&glInfo.vp0>=OUTW&&glInfo.vp1>=OUTH;
+    add(compat.res?'4000×500 surface ✓':'4000×500 surface ✕',compat.res?'ok':'bad');
+    if(!compat.res)banner(`This GPU/browser limits render size to ${glInfo.vp0}×${glInfo.vp1}; the 4000×500 output cannot be rendered or exported correctly here.`,'bad');}
+  compat.rec=!!(window.MediaRecorder&&outC.captureStream);
+  add(compat.rec?'MediaRecorder ✓':'MediaRecorder ✕',compat.rec?'ok':'bad');
+  if(compat.rec)mimes=MIME_LIST.filter(m=>MediaRecorder.isTypeSupported(m[0])).map(m=>({mime:m[0],label:m[1],ext:m[2]}));
+  const hasMp4=mimes.some(m=>m.ext==='mp4'),hasWebm=mimes.some(m=>m.ext==='webm');
+  add(hasMp4?'MP4 ✓':'MP4 ✕',hasMp4?'ok':'warn');add(hasWebm?'WebM ✓':'WebM ✕',hasWebm?'ok':'warn');
+  if(compat.rec&&!mimes.length)banner('This browser can record video but reports no supported codec for export.','bad');
+  else if(compat.rec&&!hasMp4)banner('MP4 recording is not supported by this browser — export will use WebM. Convert it (e.g. ffmpeg or HandBrake) if your processor needs MP4.','warn');
+  $('#badges').innerHTML=badges.join('');
+  const sel=$('#fmt');sel.innerHTML='<option value="auto">Auto (best available)</option>'+mimes.map(m=>`<option value="${m.mime}">${m.label}</option>`).join('');
+  sel.value=[...sel.options].some(o=>o.value===S.fmt)?S.fmt:'auto';
+  if(window.VideoEncoder&&VideoEncoder.isConfigSupported){
+    VideoEncoder.isConfigSupported({codec:'avc1.64002A',width:OUTW,height:OUTH,bitrate:2e7,framerate:30}).then(r=>{
+      compat.h264enc=!!r.supported;$('#badges').insertAdjacentHTML('beforeend',`<span class="badge ${r.supported?'ok':'warn'}">H.264 4000×500 encoder ${r.supported?'✓':'✕'}</span>`);
+      if(!r.supported&&hasMp4)banner('Warning: the H.264 encoder reports no support for 4000×500 — MP4 export may fail; WebM is the safer choice here.','warn');
+      updateDiag();}).catch(()=>{});
+  }
+  updateDiag();
+}
+function updateDiag(){
+  const sd=srcDims(),sl=wiringValid();
+  $('#diag').innerHTML=[`Renderer: ${glInfo.dbg||'n/a'}`,`Max texture: ${glInfo.maxTex||'?'} · max viewport: ${glInfo.vp0||'?'}×${glInfo.vp1||'?'}`,
+    `Source: ${sd.w}×${sd.h} (${S.srcType})`,`Output: ${OUTW}×${OUTH} · tile ${TILE}² ×${N}`,`Cabinet side: ${SIDE.toFixed(2)} ref px · ${K0.toFixed(4)} wall px / LED px`,
+    `Wiring: ${sl?'valid':'INVALID'}`,`Self-test: ${selfMsg}`].join('<br>');
+}
+/* ---------- mapping self-test (pure geometry, no GPU) ---------- */
+let selfMsg='not run';
+function selfTest(){
+  const keep=S;S=defState();let maxErr=0,touch=0,overlap=0;
+  try{
+    const sl=slotList();
+    sl.forEach(s=>{const r=REF.cabs[s.ci],D=REF.D,ex=[[r[0],r[1]-D],[r[0]+D,r[1]],[r[0],r[1]+D],[r[0]-D,r[1]]];
+      [[0,0],[500,0],[500,500],[0,500]].forEach((p,i)=>{const w=tileToWall(s,p[0],p[1]);maxErr=Math.max(maxErr,Math.hypot(w[0]-ex[i][0],w[1]-ex[i][1]));});
+      // centre round-trip
+      const c=tileToWall(s,250,250);maxErr=Math.max(maxErr,Math.hypot(c[0]-r[0],c[1]-r[1]));});
+    for(let a=0;a<N;a++)for(let b=a+1;b<N;b++){const A=REF.cabs[a],B=REF.cabs[b],md=Math.abs(A[0]-B[0])+Math.abs(A[1]-B[1]);
+      if(md<2*REF.D-1.5)overlap++;else if(md<2*REF.D+1.5)touch++;}
+    selfMsg=`${maxErr<1e-6?'PASS':'FAIL'} — 8/8 cabinets: tile corners → diamond vertices, max error ${maxErr.toExponential(1)} px; ${touch} touching edges, ${overlap} overlaps`;
+  }finally{S=keep;}
+  updateDiag();banner(selfMsg,maxErr<1e-6&&!overlap?'ok':'bad');
+}
+$('#btnSelfTest').onclick=selfTest;
+
+/* ============================================================ Export */
+let exp=null;
+function pickMime(){if(!mimes.length)return null;return S.fmt==='auto'?mimes[0]:(mimes.find(m=>m.mime===S.fmt)||mimes[0]);}
+function setExportUI(on){$('#btnExport').disabled=on;$('#btnCancel').disabled=!on;}
+function startExport(){
+  if(exp)return;
+  if(!compat.webgl||!compat.res||!compat.rec){banner('Export is not supported in this browser (see the compatibility badges above).','bad');return;}
+  if(!srcOK){banner('Nothing to export: load a video or choose a test pattern.','warn');return;}
+  if(!wiringValid()){banner('Fix the wiring/numbering first — each cabinet must appear exactly once.','bad');return;}
+  const choice=pickMime();if(!choice){banner('No supported recording codec.','bad');return;}
+  const dur=duration(),st=clamp(+S.exStart||0,0,dur),en=(+S.exEnd>0)?Math.min(+S.exEnd,dur):dur;
+  if(en-st<0.1){banner('Export range is too short.','warn');return;}
+  let rec;const stream=outC.captureStream(+S.fps||30);
+  try{rec=new MediaRecorder(stream,{mimeType:choice.mime,videoBitsPerSecond:Math.round((+S.bitrate||20)*1e6)});}
+  catch(err){banner(`This browser rejected ${choice.label} at 4000×500: ${err.message}. Try another format.`,'bad');return;}
+  exp={rec,stream,chunks:[],st,en,choice,cancel:false,started:0,stopping:false,
+       prev:{loop:vid.loop,muted:vid.muted,rate:S.rate,pb:vid.playbackRate}};
+  rec.ondataavailable=e=>{if(e.data&&e.data.size)exp&&exp.chunks.push(e.data);};
+  rec.onerror=e=>{banner('Recorder error: '+(e.error&&e.error.message||'unknown'),'bad');};
+  rec.onstop=finishExport;
+  setExportUI(true);$('#exResult').innerHTML='';$('#exMsg').textContent='Recording… keep this tab visible. Real-time export at 1× speed.';$('#progBar').style.width='0%';
+  setPlaying(false);
+  const go=()=>{renderOutput();rec.start(500);exp.started=performance.now();playing=true;
+    if(isVid()){vid.playbackRate=1;vid.play().catch(()=>{});}$('#btnPlay').textContent='⏸ Pause';};
+  if(isVid()){vid.loop=false;vid.muted=true;vid.playbackRate=1;
+    const onS=()=>{vid.removeEventListener('seeked',onS);go();};vid.addEventListener('seeked',onS);vid.currentTime=st;
+    if(Math.abs(vid.currentTime-st)<1e-6&&!vid.seeking){vid.removeEventListener('seeked',onS);go();}}
+  else{tPat=st;go();}
+}
+function exportTick(){
+  if(!exp||!exp.started||exp.stopping)return;
+  const t=curTime(),p=clamp((t-exp.st)/(exp.en-exp.st),0,1);$('#progBar').style.width=(p*100).toFixed(1)+'%';
+  $('#exMsg').textContent=`Recording ${(p*100).toFixed(0)}% — ${fmtT(t)} / ${fmtT(exp.en)}`;
+  const stalled=(performance.now()-exp.started)/1000>(exp.en-exp.st)*3+15;
+  if(t>=exp.en-0.001||(isVid()&&vid.ended)||stalled||(isVid()&&vid.paused&&!vid.seeking&&p>0.01)){
+    exp.stopping=true;setTimeout(()=>{if(exp&&exp.rec.state!=='inactive')exp.rec.stop();},Math.max(200,2200/(+S.fps||30)));}
+}
+function finishExport(){
+  const e=exp;if(!e)return;exp=null;
+  e.stream.getTracks().forEach(t=>t.stop());
+  vid.loop=e.prev.loop;vid.muted=e.prev.muted;vid.playbackRate=e.prev.pb;setPlaying(false);setExportUI(false);
+  if(e.cancel){$('#exMsg').textContent='Export cancelled.';$('#progBar').style.width='0%';return;}
+  const blob=new Blob(e.chunks,{type:e.choice.mime.split(';')[0]});
+  if(!blob.size){banner('Export produced an empty file — the browser could not encode 4000×500 with this codec.','bad');$('#exMsg').textContent='Export failed.';return;}
+  const url=URL.createObjectURL(blob),name=`dk-edits-wall-4000x500.${e.choice.ext}`;
+  $('#progBar').style.width='100%';$('#exMsg').textContent=`Done · ${e.choice.label} · ${(blob.size/1048576).toFixed(1)} MB`;
+  $('#exResult').innerHTML=`<a href="${url}" download="${name}"><button class="pri" style="width:100%">Download ${name}</button></a>
+    <video src="${url}" controls muted style="width:100%;margin-top:6px;background:#000"></video>
+    <div class="hint">${e.choice.ext==='webm'?'WebM from MediaRecorder has no seek index in some players; re-mux/convert if your processor needs MP4.':'Verify the file on your processor with the numbered test pattern before show use.'}</div>`;
+  banner('Export complete. Output is 4000×500, identical to the Processor output panel.','ok');
+}
+$('#btnExport').onclick=startExport;
+$('#btnCancel').onclick=()=>{if(!exp)return;exp.cancel=true;exp.stopping=true;if(exp.rec.state!=='inactive')exp.rec.stop();else finishExport();};
+
+/* ============================================================ Main loop */
+let patKey='';
+function frame(ts){
+  const dt=Math.min(0.1,(ts-lastTs)/1000);lastTs=ts;
+  if(playing&&!isVid()&&S.srcType==='pattern'){
+    tPat+=dt*(exp?1:S.rate);
+    if(tPat>=S.patDur){if(exp){tPat=S.patDur;}else if(S.loop)tPat=0;else{tPat=S.patDur;playing=false;$('#btnPlay').textContent='▶ Play';}}
+  }
+  if(S.srcType==='pattern'){
+    const anim=S.pattern==='circle'||S.pattern==='grid';
+    const key=[S.pattern,S.mode,S.wiring.join(),S.cabs.map(c=>c.label).join(),anim?tPat.toFixed(3):0].join('|');
+    if(key!==patKey){patKey=key;drawPattern(tPat);}
+  }else if(S.mode!==(patCanvas.width===OUTW?'strip':'physical'))sizePattern();
+  layout();renderOutput();
+  const m=mapParams(),sl=slotList();
+  if(srcOK){drawMaster(sl,m);drawWall(sl);}
+  else{mX.setTransform(1,0,0,1,0,0);mX.fillStyle='#07080b';mX.fillRect(0,0,mC.width,mC.height);wX.setTransform(1,0,0,1,0,0);wX.fillStyle='#0a0c10';wX.fillRect(0,0,wC.width,wC.height);}
+  drawStripOv(sl);updateTimeline();exportTick();
+  requestAnimationFrame(frame);
+}
+
+/* ============================================================ Init */
+try{runCompat();}catch(err){banner('Initialisation error: '+err.message,'bad');}
+if(S.srcType==='video')S.srcType='pattern';
+S.sel=clamp(S.sel|0,0,7);
+sizePattern();syncUI();updateDiag();
+requestAnimationFrame(t=>{lastTs=t;frame(t);});
+</script>
+<script>
+/* wiring / labels / orientation edited in the Player tab arrive through localStorage */
+addEventListener('storage',function(e){if(e.key!=='dlvm_v4'||!e.newValue)return;try{var j=JSON.parse(e.newValue);
+  if(j&&j.cabs&&j.cabs.length===8&&j.wiring){S.wiring=j.wiring.slice();S.cabs.forEach(function(c,i){c.label=j.cabs[i].label;c.orient=j.cabs[i].orient||0;});syncUI();}}catch(_){}});
+</script>
+<script>if("serviceWorker"in navigator&&/^https?:$/.test(location.protocol)){addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){});});}</script>
+</body>
+</html>

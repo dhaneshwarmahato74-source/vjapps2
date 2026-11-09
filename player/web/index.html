@@ -1,0 +1,480 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DK EDITS VJ PLAYER</title>
+<meta name="application-name" content="DK EDITS VJ PLAYER">
+<meta name="apple-mobile-web-app-title" content="DK EDITS VJ PLAYER">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0f1620">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="img/favicon.png">
+<link rel="icon" href="img/favicon.ico" sizes="any">
+<link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body data-mode="manual">
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs><symbol id="i-power" viewBox="0 0 24 24"><path d="M12 3v8.5"/><path d="M6.4 6.8a8 8 0 1 0 11.2 0"/></symbol><symbol id="i-diamond" viewBox="0 0 24 24"><path d="M12 2.8 21.2 12 12 21.2 2.8 12z"/><path d="M12 8.2 15.8 12 12 15.8 8.2 12z"/></symbol><symbol id="i-screens" viewBox="0 0 24 24"><rect x="2.5" y="4.5" width="13" height="9.5" rx="1.6"/><rect x="8.5" y="9.5" width="13" height="9.5" rx="1.6" fill="var(--s3)"/></symbol><symbol id="i-sliders" viewBox="0 0 24 24"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></symbol><symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13 2.5 5 13.5h6l-1 8 8-11h-6z"/></symbol><symbol id="i-wave" viewBox="0 0 24 24"><path d="M4 10v4M8 6v12M12 3v18M16 7v10M20 10v4"/></symbol><symbol id="i-node" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="5" rx="1.2"/><rect x="3" y="16" width="6" height="5" rx="1.2"/><rect x="15" y="16" width="6" height="5" rx="1.2"/><path d="M12 8v4M6 16v-4h12v4"/></symbol><symbol id="i-keys" viewBox="0 0 24 24"><rect x="2.5" y="6" width="19" height="12" rx="2"/><path d="M6.5 10h.01M10.5 10h.01M14.5 10h.01M18 10h.01M7.5 14h9"/></symbol><symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5.5v13l10.5-6.5z"/></symbol><symbol id="i-stop" viewBox="0 0 24 24"><rect x="6.5" y="6.5" width="11" height="11" rx="1.5"/></symbol><symbol id="i-route" viewBox="0 0 24 24"><circle cx="5.5" cy="6" r="2.2"/><circle cx="18.5" cy="18" r="2.2"/><path d="M7.7 6H14a3.5 3.5 0 0 1 0 7h-4a3.5 3.5 0 0 0 0 7h6.3"/></symbol><symbol id="i-cursor" viewBox="0 0 24 24"><path d="m5 4 14 6.2-6 1.9-1.9 6z"/></symbol><symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></symbol><symbol id="i-close" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></symbol><symbol id="i-wand" viewBox="0 0 24 24"><path d="m4 20 10.5-10.5"/><path d="m14 4 .8 2.2L17 7l-2.2.8L14 10l-.8-2.2L11 7l2.2-.8z"/><path d="m19 12 .5 1.5 1.5.5-1.5.5-.5 1.5-.5-1.5-1.5-.5 1.5-.5z"/></symbol><symbol id="i-phones" viewBox="0 0 24 24"><path d="M4 15v-3a8 8 0 0 1 16 0v3"/><rect x="3" y="14" width="4" height="7" rx="1.5"/><rect x="17" y="14" width="4" height="7" rx="1.5"/></symbol><symbol id="i-warn" viewBox="0 0 24 24"><path d="M12 3.5 22 20H2z"/><path d="M12 10v4.5M12 17.3h.01"/></symbol><symbol id="i-film" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7.5 4v16M16.5 4v16M3 9h4.5M16.5 9H21M3 15h4.5M16.5 15H21"/></symbol><symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2.5V5M12 19v2.5M2.5 12H5M19 12h2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M18.7 5.3l-1.8 1.8M7.1 16.9l-1.8 1.8"/></symbol><symbol id="i-edge" viewBox="0 0 24 24"><rect x="5.5" y="5.5" width="13" height="13" rx="3"/><path d="M12 1.5v2M12 20.5v2M1.5 12h2M20.5 12h2"/></symbol><symbol id="i-monitor" viewBox="0 0 24 24"><rect x="3" y="4.5" width="18" height="11.5" rx="2"/><path d="M9 20h6M12 16v4"/></symbol><symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3 20 6v6c0 5-3.4 8-8 9.5C7.4 20 4 17 4 12V6z"/><path d="m9 12 2.2 2.2L15.5 10"/></symbol><symbol id="i-grid" viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></symbol><symbol id="i-wall" viewBox="0 0 24 24"><path d="M7.5 3 11 6.5 7.5 10 4 6.5z"/><path d="M16.5 3 20 6.5 16.5 10 13 6.5z"/><path d="M5.5 11.5 9 15l-3.5 3.5L2 15z"/><path d="M12 11.5 15.5 15 12 18.5 8.5 15z"/><path d="M18.5 11.5 22 15l-3.5 3.5L15 15z"/><path d="M12 19.5 14.5 22H9.5z"/></symbol><symbol id="i-strip" viewBox="0 0 24 24"><rect x="2.5" y="8" width="19" height="8" rx="1.5"/><path d="M8 8v8M13.5 8v8"/></symbol><symbol id="i-palette" viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 0 18c1.3 0 2-.9 2-1.8 0-1.4-1.1-1.5-1.1-2.7 0-1 .8-1.5 1.8-1.5H17a4 4 0 0 0 4-4C21 6.7 17 3 12 3z"/><path d="M7.5 11h.01M10 7.5h.01M14.5 7.5h.01"/></symbol></defs></svg>
+
+<!-- first-run photosensitivity warning -->
+<div class="modal open" id="warnModal" role="dialog" aria-modal="true" aria-labelledby="warnTitle">
+  <div class="modal-box narrow">
+    <img class="warn-logo" src="img/dk-logo.gif" alt="DK EDITS VJ PLAYER">
+    <h2 id="warnTitle"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-warn"/></svg>Photosensitive seizure warning</h2>
+    <p>This software produces rapid flashing light. Flashing can trigger seizures in people with photosensitive epilepsy – often without any previous history.</p>
+    <ul>
+      <li><b>Safe mode is ON by default:</b> flash rate is limited to 3 per second and brightness to 70&nbsp;%.</li>
+      <li>Display a visible warning to your audience, and avoid red-dominant full-field flashes and high-contrast patterns above 3&nbsp;Hz.</li>
+      <li><b>Esc</b> or <b>B</b> is the instant blackout. The blackout button is always at the top of the screen.</li>
+    </ul>
+    <label class="check"><input type="checkbox" id="warnAck"> I understand and will operate the system responsibly</label>
+    <div class="row end"><button class="btn primary" id="warnOk" disabled>Continue</button></div>
+  </div>
+</div>
+
+<div id="fileBanner" class="banner" hidden><b>You opened index.html as a plain file.</b> Art-Net, saved settings and network output sync need the bridge: run <code>start.bat</code> (Windows) / <code>start.command</code> (Mac) and use <code>http://localhost:8080</code>. Manual/Audio modes and the output window still work here.</div>
+
+<div class="app">
+<header class="top">
+  <div class="brand">
+    <img class="brand-logo" src="img/dk-logo.gif" alt="DK EDITS VJ PLAYER" width="120" height="40">
+    <h1 class="sr-only">DK EDITS VJ PLAYER</h1>
+    <p><b>Diamond wall</b>8 cabinets · 2-2-3-1 · 4000×500</p>
+  </div>
+  <div class="chips" aria-live="polite">
+    <span class="chip" id="chipBridge" title="Local bridge connection"><i></i>Bridge</span>
+    <span class="chip" id="chipArtnet" title="Art-Net signal from the console"><i></i>Art-Net</span>
+    <span class="chip" id="chipOut" title="Is an output page receiving live frames? (click: output settings)"><i></i>Output</span>
+    <span class="chip" id="chipMode"><i></i>Mode</span>
+    <span class="chip" id="chipSafe" title="Click: safety settings"><i></i>Safe</span>
+  </div>
+  <div class="actions">
+    <a class="btn" id="btnMapper" href="mapper.html" target="_blank" rel="noopener" title="Calibrate the video mapping on the 8 diamonds (opens in a new tab)"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-diamond"/></svg><span>LED Mapper</span></a>
+    <button class="btn" id="btnOutput" title="Open the processor output on the second screen"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-screens"/></svg><span>Output<span class="long"> to 2nd screen</span></span></button>
+    <button class="btn" id="btnSettings"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-sliders"/></svg>Settings</button>
+    <span class="sep" aria-hidden="true"></span>
+    <button class="btn danger" id="btnBlackout" title="Esc or B"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-power"/></svg><span class="lbl">Blackout</span></button>
+  </div>
+</header>
+
+<nav class="rail" aria-label="Control source">
+  <div class="rail-h">Source</div>
+  <div class="modes" role="radiogroup" id="modes" aria-label="Control source">
+      <button class="mode" data-mode="tiger" role="radio" title="Art-Net from the Tiger Touch console"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-node"/></svg><b>Tiger Touch</b><span>Art-Net from console</span><kbd>⇧1</kbd></button>
+      <button class="mode" data-mode="audio" role="radio" title="Microphone, audio interface or audio file"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-wave"/></svg><b>Audio beat</b><span>Mic · interface · file</span><kbd>⇧2</kbd></button>
+      <button class="mode" data-mode="manual" role="radio" title="Keys and on-screen buttons"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-keys"/></svg><b>Manual keys</b><span>Keys &amp; buttons</span><kbd>⇧3</kbd></button>
+    </div>
+  <div class="rail-foot"><span>Only one source is live</span><span><kbd>Esc</kbd> blackout</span></div>
+</nav>
+
+<main class="stage">
+  <div class="top-row">
+    <section class="pane wallpane">
+      <div class="pane-h"><h2><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-wall"/></svg>Wall preview</h2><span class="tag" id="patName">–</span></div>
+      <div class="wallframe"><canvas id="wall" class="wall" aria-label="Physical diamond wall preview"></canvas></div>
+      <div class="testbar" title="Steady light on any mode, also shows on the output">
+        <span>Panel test</span><div id="testBtns"></div>
+      </div>
+    </section>
+
+    <section class="pane bankpane">
+      <div class="pane-h"><h2><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-grid"/></svg>Patterns <small>16</small></h2><span class="sub" id="patHint" style="margin:0"></span></div>
+      <div class="patterns" id="patterns"></div>
+    </section>
+  </div>
+
+  <section class="pane ribbon">
+    <div class="pane-h"><h2><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-strip"/></svg>Processor output <small>4000 × 500 px</small></h2>
+      <label class="check small"><input type="checkbox" data-cfg="output.showLabels"> Mapping labels on output</label>
+    </div>
+    <div class="strip-wrap"><canvas id="strip" width="4000" height="500"></canvas></div>
+    <div class="ranges" id="ranges"></div>
+  </section>
+</main>
+
+<aside class="inspector" aria-label="Settings">
+  <div class="tabs" role="tablist">
+    <button class="tab on" role="tab" data-tab="source" aria-selected="true"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-sliders"/></svg><span>Source</span></button>
+    <button class="tab" role="tab" data-tab="video" aria-selected="false"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-film"/></svg><span>Video</span></button>
+    <button class="tab" role="tab" data-tab="look" aria-selected="false"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-sun"/></svg><span>Look</span></button>
+    <button class="tab" role="tab" data-tab="neon" aria-selected="false"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-edge"/></svg><span>Neon</span></button>
+    <button class="tab" role="tab" data-tab="output" aria-selected="false"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-monitor"/></svg><span>Output</span></button>
+    <button class="tab" role="tab" data-tab="safety" aria-selected="false"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-shield"/></svg><span>Safety</span></button>
+  </div>
+  <div class="panes">
+
+    <div class="pane-body" data-pane="source" role="tabpanel">
+      <section class="sec">
+        <div class="sec-h"><h2>Control source</h2><span class="sub" style="margin:0">Only one is active. The others are ignored.</span></div>
+        <!-- Tiger -->
+      <div class="mode-body" id="body-tiger">
+        <div class="monitor">
+          <div class="swatch" id="tSwatch"></div>
+          <div class="bars">
+            <div class="bar"><span>R</span><i id="tR"></i><em id="tRv">0</em></div>
+            <div class="bar"><span>G</span><i id="tG"></i><em id="tGv">0</em></div>
+            <div class="bar"><span>B</span><i id="tB"></i><em id="tBv">0</em></div>
+            <div class="bar"><span>W</span><i id="tW"></i><em id="tWv">0</em></div>
+            <div class="bar"><span>Dim</span><i id="tD"></i><em id="tDv">0</em></div>
+          </div>
+        </div>
+        <canvas id="dmxMap" width="512" height="64" class="dmxmap" aria-label="DMX universe 512 channel monitor"></canvas>
+        <div class="kv" id="tStats"></div>
+        <div class="sub" id="tHelp"></div>
+        <div class="row wrap gap">
+          <button class="btn primary" id="btnLearn"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-wand"/></svg>Auto-Sync with console (easy)</button>
+          <button class="btn" id="btnTigerCfg"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-sliders"/></svg>Art-Net &amp; fixture mapping…</button>
+        </div>
+      </div>
+
+      <!-- Audio -->
+      <div class="mode-body" id="body-audio">
+        <div class="row wrap gap">
+          <label class="field">Input source
+            <select data-cfg="audio.source"><option value="mic">Microphone / audio interface</option><option value="file">Audio file</option></select>
+          </label>
+          <label class="field grow" id="devField">Input device
+            <select id="audioDevice" data-cfg="audio.deviceId"><option value="">Default input</option></select>
+          </label>
+        </div>
+        <div class="row wrap gap" id="fileRow">
+          <input type="file" id="audioFile" accept="audio/*">
+          <audio id="audioEl" controls loop></audio>
+        </div>
+        <div class="row gap">
+          <button class="btn primary" id="btnAudioStart"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-play"/></svg><span class="lbl">Start listening</span></button>
+          <button class="btn" id="btnAudioStop"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-stop"/></svg>Stop</button>
+          <span class="sub" id="audioMsg"></span>
+        </div>
+        <div class="meters">
+          <div class="bar led"><span>Bass</span><div class="led-track"><i id="mBass"></i><u id="pBass"></u></div></div>
+          <div class="bar led"><span>Mid</span><div class="led-track"><i id="mMid"></i><u id="pMid"></u></div></div>
+          <div class="bar led"><span>Treble</span><div class="led-track"><i id="mTre"></i><u id="pTre"></u></div></div>
+          <div class="beatline"><b id="beatDot"></b><span id="bpm">– BPM</span><span id="beatCount" class="sub"></span></div>
+        </div>
+        <div class="sliders">
+          <label class="slider">Sensitivity <output></output><input type="range" min="0" max="100" step="1" data-cfg="audio.sensitivity" data-unit="%"></label>
+          <label class="slider">Min gap between beats <output></output><input type="range" min="150" max="700" step="10" data-cfg="audio.minGapMs" data-unit=" ms"></label>
+          <label class="slider">Beats per pattern (0 = lock) <output></output><input type="range" min="0" max="64" step="1" data-cfg="audio.beatsPerPattern" data-type="int"></label>
+        </div>
+        <div class="row wrap gap">
+          <label class="field">Beat division
+            <select data-cfg="audio.division"><option value="2">2× (double time)</option><option value="1">1× every beat</option><option value="1/2">1/2 every 2nd beat</option><option value="1/4">1/4 every 4th beat</option><option value="1/8">1/8 every 8th beat</option></select>
+          </label>
+          <label class="field">Auto colour
+            <select data-cfg="audio.colorMode"><option value="bands">Bass / mid / treble → nearest ON colour</option><option value="hue">Random ON colour per beat</option><option value="palette">Cycle ON colours in order</option><option value="white">Hard white</option></select>
+          </label>
+        </div>
+      </div>
+
+      <!-- Manual -->
+      <div class="mode-body" id="body-manual">
+        <div class="row wrap gap">
+          <button class="btn big" id="btnTrigger"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-bolt"/></svg>Trigger <kbd>Space</kbd></button>
+          <button class="btn big" id="btnStrobe">Hold to strobe <kbd>F</kbd></button>
+          <button class="btn big" id="btnWhite">Hard white <kbd>M</kbd></button>
+        </div>
+        <div class="label">Colour <kbd>K</kbd></div>
+        <div class="swatches" id="swatches"></div>
+        <label class="field inline">Custom <input type="color" id="colourPicker" value="#ffffff"></label>
+        <div class="label">Hold to flash group</div>
+        <div class="row wrap gap" id="groupBtns"></div>
+        <div class="label">Hold to flash panel <kbd>1</kbd>–<kbd>8</kbd></div>
+        <div class="row wrap gap" id="panelBtns"></div>
+        <details class="keys" open><summary>Keyboard map</summary>
+          <table>
+            <tr><td><kbd>Q W E R T Y U I O P</kbd> <kbd>A S D G H J</kbd></td><td>Patterns 1–16 (in the order shown)</td></tr>
+            <tr><td><kbd>←</kbd> <kbd>→</kbd> / <kbd>N</kbd></td><td>Previous / next pattern</td></tr>
+            <tr><td><kbd>Space</kbd></td><td>One flash / next step of the pattern</td></tr>
+            <tr><td><kbd>F</kbd> (hold)</td><td>Strobe at the Speed setting (safety limited)</td></tr>
+            <tr><td><kbd>Z X C V</kbd> (hold)</td><td>Flash group: top / mid-upper / mid-lower / bottom</td></tr>
+            <tr><td><kbd>1</kbd>…<kbd>8</kbd> (hold)</td><td>Flash single panel</td></tr>
+            <tr><td><kbd>K</kbd> / <kbd>⇧K</kbd></td><td>Next / previous colour</td></tr>
+            <tr><td><kbd>M</kbd></td><td>Hard-white toggle</td></tr>
+            <tr><td><kbd>↑</kbd> <kbd>↓</kbd></td><td>Brightness ±5 %</td></tr>
+            <tr><td><kbd>[</kbd> <kbd>]</kbd></td><td>Speed −/+ 0.5 Hz</td></tr>
+            <tr><td><kbd>Esc</kbd> / <kbd>B</kbd></td><td>Blackout toggle (works in every mode)</td></tr>
+            <tr><td><kbd>⇧1</kbd> <kbd>⇧2</kbd> <kbd>⇧3</kbd></td><td>Switch control source</td></tr>
+          </table>
+        </details>
+      </div>
+
+      </section>
+    </div>
+
+    <div class="pane-body" data-pane="video" role="tabpanel" hidden>
+      <section class="sec">
+      <div class="sec-h"><h2><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-film"/></svg>Video layer <small>4 + 1 special · 4000×500</small></h2><label class="check small"><input type="checkbox" data-cfg="video.enabled"> On</label></div>
+      <div class="row wrap gap">
+        <input type="file" id="videoFiles" accept="video/*" multiple>
+        <button class="btn" id="btnVideoNext" title="Comma / Period keys in Manual mode">Next video (random)</button>
+      </div>
+      <div class="vslots" id="vslots"></div>
+      <div class="label">Special video <span class="sub">one clip, comes back every 4–5 min, plays to the end, cannot be skipped</span></div>
+      <div class="row wrap gap">
+        <input type="file" id="specialFile" accept="video/*">
+        <button class="btn sm" id="btnSpecialNow" title="Starts it now (for testing). Once started it cannot be skipped.">Play special now</button>
+      </div>
+      <div class="vslots" id="specialSlot"></div>
+      <div class="row wrap gap">
+        <label class="field">Earliest (min) <input type="number" data-cfg="video.specialMinMin" data-type="float" min="0.1" max="60" step="0.5"></label>
+        <label class="field">Latest (min) <input type="number" data-cfg="video.specialMaxMin" data-type="float" min="0.1" max="60" step="0.5"></label>
+      </div>
+      <div class="sliders">
+        <label class="slider">Video level <output></output><input type="range" min="0" max="100" data-cfg="video.level" data-unit="%"></label>
+        <label class="slider">Crossfade <output></output><input type="range" min="0" max="2000" step="50" data-cfg="video.xfadeMs" data-unit=" ms"></label>
+        <label class="slider">Audio mode: change video every N beats (1 = every beat, 0 = hold) <output></output><input type="range" min="0" max="64" data-cfg="audio.beatsPerVideo" data-type="int"></label>
+        <label class="slider">Tiger mode: change video every N console flashes (0 = off) <output></output><input type="range" min="0" max="64" data-cfg="tiger.flashesPerVideo" data-type="int"></label>
+      </div>
+      <div class="row wrap gap">
+        <label class="field">Next video is chosen
+          <select data-cfg="video.order"><option value="random">Random (never same twice)</option><option value="sequence">In order 1→2→3…</option></select>
+        </label>
+        <label class="field">Video mapping
+          <select data-cfg="video.mapMode"><option value="auto">Auto (4000×500 clips straight, others mapped to the diamond wall)</option><option value="stretch">Always straight across 4000×500</option><option value="wall">Always diamond-wall mapping (LED Mapper calibration)</option></select>
+        </label>
+        <label class="check small"><input type="checkbox" data-cfg="video.warm"> Keep all clips running (instant cuts)</label>
+      </div>
+      <div class="sub">Videos change only on the active source: beats in Audio mode, console pulse (channel set in Settings) or flash count in Tiger mode, buttons / <kbd>,</kbd> <kbd>.</kbd> in Manual mode. Clips are muted; files stay in this browser session only.</div>
+    </section>
+    </div>
+
+    <div class="pane-body" data-pane="look" role="tabpanel" hidden>
+      <section class="sec">
+      <div class="sec-h"><h2><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-sun"/></svg>Look &amp; timing</h2></div>
+      <div class="row wrap gap">
+        <label class="field">Strobe mode
+          <select data-cfg="video.blend"><option value="normal">Hard – strobe replaces the video (no blend)</option><option value="add">Overlay blend – strobe mixes over the video</option></select>
+        </label>
+      </div>
+      <div class="sliders">
+        <label class="slider">Overlay strength (only for Overlay blend – higher = purer colour, lower = more video visible) <output></output><input type="range" min="20" max="100" step="5" data-cfg="video.overlayStrength" data-unit="%"></label>
+        <label class="slider">Brightness <output></output><input type="range" min="0" max="100" step="1" data-cfg="output.brightness" data-unit="%"></label>
+        <label class="slider">Flash duration <output></output><input type="range" min="20" max="1000" step="10" data-cfg="output.flashMs" data-unit=" ms"></label>
+        <label class="slider">Decay (0 = hard strobe) <output></output><input type="range" min="0" max="100" step="5" data-cfg="output.decay" data-unit="%"></label>
+        <label class="slider">Speed – manual strobe rate <output></output><input type="range" id="speedRange" min="0.5" max="12" step="0.5" data-cfg="output.speedHz" data-unit=" Hz"></label>
+      </div>
+      <div class="sub">Console and audio modes take colour and timing from their own source; brightness, duration and decay always apply.</div>
+    </section><section class="sec">
+      <div class="sec-h"><h2><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-palette"/></svg>Strobe colours</h2><span class="row gap"><button class="btn sm" id="colAllOn">All on</button><button class="btn sm" id="colWhiteOnly">Only white</button></span></div>
+      <div class="colchips" id="colChips"></div>
+      <div class="sub">Tap a colour to switch it ON / OFF. Audio mode and the <kbd>K</kbd> key only use colours that are ON – an OFF colour never appears. At least one stays on.</div>
+    </section>
+    </div>
+
+    <div class="pane-body" data-pane="neon" role="tabpanel" hidden>
+      <section class="sec neon-card">
+      <div class="sec-h"><h2><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-edge"/></svg>Neon borders <small>outer edges only</small></h2><span class="row gap"><span class="tag" id="neonNow">–</span><label class="check small"><input type="checkbox" data-cfg="neon.on"> On</label></span></div>
+      <div class="row wrap gap">
+        <label class="field">Style <select data-cfg="neon.style" id="neonStyle"></select></label>
+        <label class="field">Order
+          <select data-cfg="neon.order" id="neonOrder"><option value="wiring">Wiring – slot 1 → 8</option><option value="panel">Panels – P1 → P8</option><option value="reverse">Reverse – slot 8 → 1</option><option value="custom">Custom order…</option><option value="together">All together</option></select>
+        </label>
+        <label class="field">Colours
+          <select data-cfg="neon.palette"><option value="auto">Style's own colours</option><option value="neon">Neon (pink · violet · cyan)</option><option value="rainbow">Rainbow</option><option value="fire">Fire</option><option value="ice">Ice</option><option value="electric">Electric blue</option><option value="pink">Hot pink</option><option value="cyan">Electric cyan</option><option value="green">Acid green</option><option value="white">White</option></select>
+        </label>
+        <label class="field" id="neonCustomWrap" hidden>Custom order <small>(P numbers)</small>
+          <input type="text" data-cfg="neon.custom" placeholder="1,2,4,3,5,6,7,8" spellcheck="false">
+        </label>
+      </div>
+      <div class="row wrap gap neon-auto">
+        <label class="field grow">Over video
+          <select data-cfg="neon.blend"><option value="screen">Blend – glow mixes into the video</option><option value="add">Blend+ – glow adds light (strongest)</option><option value="normal">No blend – solid on top of video</option></select>
+        </label>
+        <label class="check"><input type="checkbox" data-cfg="neon.ultra"> <b>Ultra glow</b></label>
+      </div>
+      <div class="row wrap gap neon-auto">
+        <label class="check"><input type="checkbox" data-cfg="neon.auto"> <b>Auto-switch with audio beats</b></label>
+        <label class="field inline">every <select data-cfg="neon.autoBeats" data-type="int"><option value="1">1 beat</option><option value="2">2 beats</option><option value="4">4 beats</option><option value="8">8 beats</option><option value="16">16 beats</option><option value="32">32 beats</option></select></label>
+        <label class="field inline"><select data-cfg="neon.autoOrder"><option value="random">random</option><option value="sequence">in order</option></select></label>
+      </div>
+      <div class="row wrap gap neon-auto">
+        <button class="btn sm primary" id="neonListen"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-phones"/></svg>Listen</button><button class="btn sm" id="neonListenStop" title="Stop listening"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-stop"/></svg></button>
+        <label class="field inline">no audio → every <select data-cfg="neon.autoSec" data-type="int"><option value="0">stay</option><option value="5">5 s</option><option value="10">10 s</option><option value="20">20 s</option><option value="30">30 s</option></select></label>
+      </div>
+      <div class="sub neon-status" id="neonAudio" style="display:block"></div>
+      <details class="neon-pool"><summary>Auto-switch pool <span id="neonPoolCount"></span></summary>
+        <div class="row gap"><button class="btn sm" id="neonAllOn">All on</button><button class="btn sm" id="neonAllOff">All off</button><span class="sub">Tap a style to switch it ON / OFF for auto-switching.</span></div>
+        <div class="colchips" id="neonPool"></div>
+      </details>
+      <div class="neon-order" id="neonOrderView"></div>
+      <div class="sliders">
+        <label class="slider">Speed <output></output><input type="range" min="0.1" max="3" step="0.1" data-cfg="neon.speed" data-unit="×"></label>
+        <label class="slider">Line width <output></output><input type="range" min="4" max="40" step="1" data-cfg="neon.width" data-unit=" px"></label>
+        <label class="slider">Glow <output></output><input type="range" min="0" max="100" step="5" data-cfg="neon.glow" data-unit="%"></label>
+        <label class="slider">Brightness <output></output><input type="range" min="10" max="100" step="5" data-cfg="neon.brightness" data-unit="%"></label>
+        <label class="slider">Video dim behind border <output></output><input type="range" min="0" max="100" step="5" data-cfg="neon.dim" data-unit="%"></label>
+      </div>
+    </section>
+    </div>
+
+    <div class="pane-body" data-pane="output" role="tabpanel" hidden>
+      <section class="sec">
+        <div class="sec-h"><h2><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-monitor"/></svg>Output window</h2></div>
+        <div class="row wrap gap" style="margin-top:0">
+          <button class="btn primary" id="btnOutput2"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-screens"/></svg>Open on extended screen</button>
+          <label class="field inline">Window fit
+            <select data-cfg="output.fit">
+              <option value="stretch">Fill / stretch</option>
+              <option value="fit">Fit (letterbox)</option>
+              <option value="crop">Crop to fill</option>
+              <option value="native">Native 1:1 (4000×500)</option>
+            </select>
+          </label>
+          <label class="field inline">FPS
+            <select data-cfg="output.fps" data-type="int"><option value="30">30</option><option value="60">60</option></select>
+          </label>
+        </div>
+        <div class="sub" id="outInfo">Output goes to your <b>extended screen</b>; this page stays on the laptop as the control/preview screen.</div>
+      </section>
+      <section class="sec wiring-box">
+        <div class="sec-h"><h2><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-route"/></svg>Wiring <small>processor slot → cabinet</small></h2><span class="sub" id="wireState" style="margin:0"></span></div>
+        <div class="sub" style="margin-top:0">Slot N = the N-th 500 px tile of the output. Pick which cabinet is cabled N-th in your chain; strobe, video, preview and output follow immediately (shared with the LED Mapper).</div>
+        <div class="row wrap gap">
+          <label class="check"><input type="checkbox" data-cfg="output.showWiringPath"> Show wiring path on the wall</label>
+          <button class="btn sm" id="btnWireClick" title="Click the cabinets on the wall in the order they are cabled"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-cursor"/></svg><span class="lbl">Wire by clicking</span></button>
+        </div>
+        <div class="sub" id="wireClickMsg" hidden></div>
+        <div id="wiring" class="wiring-grid"></div>
+        <div class="row wrap gap" id="wirePresets">
+          <button class="btn sm" data-w="1,2,3,4,5,6,7,8">1→8</button><button class="btn sm" data-w="8,7,6,5,4,3,2,1">8→1</button>
+          <button class="btn sm" data-w="1,2,4,3,5,6,7,8">Snake rows</button><button class="btn sm" data-w="5,1,3,6,8,4,2,7">By column</button>
+        </div>
+      </section>
+    </div>
+
+    <div class="pane-body" data-pane="safety" role="tabpanel" hidden>
+      <section class="sec">
+      <div class="sec-h"><h2><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-shield"/></svg>Photosensitivity safety</h2></div>
+      <label class="check"><input type="checkbox" data-cfg="safety.safe" id="safeToggle"> <b>Safe mode</b> – max 3 flashes/s, brightness ≤ 70 %</label>
+      <div class="sliders">
+        <label class="slider">Max flash rate <output></output><input type="range" id="maxHzRange" min="1" max="12" step="0.5" data-cfg="safety.maxHz" data-unit=" Hz"></label>
+        <label class="slider">Max brightness <output></output><input type="range" id="maxBrRange" min="10" max="100" step="5" data-cfg="safety.maxBrightness" data-unit="%"></label>
+        <label class="slider">Fade-in after blackout <output></output><input type="range" min="0" max="3000" step="100" data-cfg="safety.fadeInMs" data-unit=" ms"></label>
+      </div>
+      <div class="kv"><span>Flashes limited by the rate cap</span><b id="limitedCount">0</b></div>
+      <div class="sub">The rate cap drops any trigger that would exceed the limit, whichever control source sends it.</div>
+    </section>
+    </div>
+
+  </div>
+</aside>
+</div>
+
+<!-- Settings -->
+
+<div class="modal" id="learnModal" role="dialog" aria-modal="true" aria-labelledby="learnTitle">
+  <div class="modal-box narrow">
+    <div class="sec-h"><h2 id="learnTitle"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-wand"/></svg>Auto-Sync with Tiger Touch</h2><button class="btn sm" id="learnClose" aria-label="Close"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-close"/></svg></button></div>
+    <div class="sub" id="learnIntro">Pick ONE DJ light on the console. Follow the steps – the player listens to the Art-Net data and learns the channels by itself. No channel numbers to type.</div>
+    <div id="learnStatus" class="learn-status"></div>
+    <div id="learnStepBox" class="learn-step"></div>
+    <div id="learnList" class="learn-list"></div>
+    <div class="row wrap gap" style="margin-top:10px">
+      <button class="btn" id="learnSkip">Skip this step</button>
+      <button class="btn" id="learnRestart">↺ Start again</button>
+      <button class="btn primary" id="learnDone" hidden>Done – use Tiger mode</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="settingsModal" role="dialog" aria-modal="true" aria-labelledby="setTitle">
+  <div class="modal-box">
+    <div class="sec-h"><h2 id="setTitle">Settings</h2><button class="btn" id="setClose">Close</button></div>
+
+    <details open><summary>Art-Net network (bridge)</summary>
+      <div class="form">
+        <label class="field">Listen on interface
+          <select id="ifaceSelect" data-cfg="artnet.bindAddress"><option value="0.0.0.0">All interfaces (0.0.0.0)</option></select>
+        </label>
+        <label class="field">UDP port <input type="number" data-cfg="artnet.port" data-type="int" min="1" max="65535"></label>
+        <label class="field">Art-Net universe (port-address, 0-based) <input type="number" data-cfg="artnet.universe" data-type="int" min="0" max="32767"></label>
+        <label class="check"><input type="checkbox" data-cfg="artnet.respondToPoll"> Answer ArtPoll (appear as a node on the console)</label>
+        <label class="field">Node name <input type="text" maxlength="17" data-cfg="artnet.nodeName"></label>
+      </div>
+      <div class="sub" id="bridgeNote"></div>
+    </details>
+
+    <details open><summary>DMX fixture profile &amp; colour mixing</summary>
+      <div class="form">
+        <label class="field">Fixture profile <select id="profileSelect" data-cfg="fixture.profile"></select></label>
+        <label class="field" id="customRow">Custom channel order <input type="text" data-cfg="fixture.customChannels" placeholder="dim,r,g,b,w,none"></label>
+        <label class="field">Start address (1–512) <input type="number" data-cfg="fixture.startAddress" data-type="int" min="1" max="512"></label>
+        <label class="field">Fixture count (mixed together) <input type="number" data-cfg="fixture.count" data-type="int" min="1" max="64"></label>
+        <label class="field">Address spacing (0 = profile footprint) <input type="number" data-cfg="fixture.spacing" data-type="int" min="0" max="512"></label>
+        <label class="field">Mix multiple fixtures
+          <select data-cfg="fixture.mix"><option value="max">Brightest per channel (max)</option><option value="avgLit">Average of lit fixtures</option><option value="first">First fixture only</option></select>
+        </label>
+        <label class="field">White channel
+          <select data-cfg="fixture.whiteMode"><option value="add">Add to R, G and B</option><option value="ignore">Ignore</option></select>
+        </label>
+        <label class="check"><input type="checkbox" data-cfg="fixture.dimmerScalesColor"> Fixture dimmer scales the LED wall colour</label>
+        <label class="slider">Red gain <output></output><input type="range" min="0" max="200" data-cfg="fixture.gainR" data-unit="%"></label>
+        <label class="slider">Green gain <output></output><input type="range" min="0" max="200" data-cfg="fixture.gainG" data-unit="%"></label>
+        <label class="slider">Blue gain <output></output><input type="range" min="0" max="200" data-cfg="fixture.gainB" data-unit="%"></label>
+        <label class="slider">Gamma <output></output><input type="range" min="0.5" max="3" step="0.1" data-cfg="fixture.gamma"></label>
+      </div>
+      <div class="chanmap" id="chanMap"></div>
+    </details>
+
+    <details open><summary>Tiger Touch triggers</summary>
+      <div class="form">
+        <label class="field">Colour source
+          <select data-cfg="tiger.colorMode"><option value="fixture">Follow fixture RGB</option><option value="white">Always hard white</option></select>
+        </label>
+        <label class="field">Flash trigger
+          <select data-cfg="tiger.flashSource">
+            <option value="intensity">Fixture intensity turns on (follow the DJ lights)</option>
+            <option value="color">Fixture colour changes</option>
+            <option value="strobech">Fixture strobe channel (strobe speed follows the console)</option>
+            <option value="channel">Dedicated trigger channel ≥ 50 %</option>
+          </select>
+        </label>
+        <label class="slider">Intensity threshold <output></output><input type="range" min="5" max="95" data-cfg="tiger.intensityThreshold" data-unit="%"></label>
+        <label class="slider">Colour-change sensitivity (lower = more sensitive) <output></output><input type="range" min="10" max="300" step="10" data-cfg="tiger.colorChangeDelta"></label>
+        <label class="field">Trigger / strobe channel (1–512) <input type="number" data-cfg="tiger.flashChannel" data-type="int" min="1" max="512"></label>
+        <label class="check"><input type="checkbox" data-cfg="tiger.gate"> Gate: hold the flash while the console signal is on (otherwise timed by Flash duration)</label>
+        <label class="field">Pattern change
+          <select data-cfg="tiger.patternAdvance">
+            <option value="channelEdge">Channel pulse → next pattern</option>
+            <option value="channelSelect">Channel value selects pattern 1–16</option>
+            <option value="none">Console never changes pattern</option>
+          </select>
+        </label>
+        <label class="field">Pattern channel (1–512) <input type="number" data-cfg="tiger.patternChannel" data-type="int" min="0" max="512"></label>
+        <label class="slider">Also next pattern every N console flashes (0 = off) <output></output><input type="range" min="0" max="64" data-cfg="tiger.flashesPerPattern" data-type="int"></label>
+        <label class="field">Video change channel (0 = none; pulse &gt;50 % = next video) <input type="number" data-cfg="tiger.videoChannel" data-type="int" min="0" max="512"></label>
+        <label class="field">Master brightness channel (0 = none) <input type="number" data-cfg="tiger.masterChannel" data-type="int" min="0" max="512"></label>
+        <label class="field">Signal-lost timeout (ms) <input type="number" data-cfg="tiger.signalTimeoutMs" data-type="int" min="500" max="10000" step="100"></label>
+      </div>
+    </details>
+    <div class="row end"><button class="btn primary" id="setDone">Done</button></div>
+  </div>
+</div>
+
+<script>if (!/^https?:$/.test(location.protocol)) addEventListener("DOMContentLoaded", function () { document.getElementById("fileBanner").hidden = false; });</script>
+<script src="js/core.js"></script>
+<script src="js/patterns.js"></script>
+<script src="js/engine.js"></script>
+<script src="js/render.js"></script>
+<script src="js/artnet.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/manual.js"></script>
+<script src="js/sync.js"></script>
+<script src="js/wallmap.js"></script>
+<script src="js/neon.js"></script>
+<script src="js/video.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/learn.js"></script>
+<script src="js/wiringui.js"></script>
+<script src="js/layout.js"></script>
+<script>
+if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
+  window.addEventListener('load', function () { navigator.serviceWorker.register('sw.js').catch(function () {}); });
+}
+</script>
+</body>
+</html>

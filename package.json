@@ -1,0 +1,86 @@
+{
+  "name": "dk-edits-vj-player-desktop",
+  "productName": "DK EDITS VJ PLAYER",
+  "version": "1.0.0",
+  "description": "Desktop wrapper (Windows + macOS) for DK EDITS VJ PLAYER",
+  "author": "DK EDITS",
+  "private": true,
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist:win": "electron-builder --win --x64",
+    "dist:mac": "electron-builder --mac --universal",
+    "dist": "electron-builder"
+  },
+  "devDependencies": {
+    "electron": "^45.2.3",
+    "electron-builder": "^26.18.0"
+  },
+  "build": {
+    "appId": "com.dkedits.vjplayer",
+    "productName": "DK EDITS VJ PLAYER",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "src/**/*",
+      "app.config.json",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "player",
+        "to": "player",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ],
+    "mac": {
+      "category": "public.app-category.music",
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "universal"
+          ]
+        }
+      ],
+      "extendInfo": {
+        "NSMicrophoneUsageDescription": "Audio-reactive mode listens to the microphone / audio input to detect beats.",
+        "NSCameraUsageDescription": "Not used."
+      },
+      "extraResources": [
+        {
+          "from": "build/mac/dk-unmirror",
+          "to": "dk-unmirror"
+        }
+      ],
+      "icon": "build/icon.png"
+    },
+    "dmg": {
+      "title": "DK EDITS VJ PLAYER"
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon.ico"
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "deleteAppDataOnUninstall": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "uninstallDisplayName": "DK EDITS VJ PLAYER"
+    },
+    "beforePack": "build/compile-helper.js"
+  }
+}

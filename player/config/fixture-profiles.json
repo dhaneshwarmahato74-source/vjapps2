@@ -1,0 +1,12 @@
+[
+  { "id": "rgb", "name": "RGB (3ch: R G B)", "channels": ["r", "g", "b"] },
+  { "id": "dimmer-rgb", "name": "Dimmer + RGB (4ch: Dim R G B)", "channels": ["dim", "r", "g", "b"] },
+  { "id": "rgb-dimmer", "name": "RGB + Dimmer (4ch: R G B Dim)", "channels": ["r", "g", "b", "dim"] },
+  { "id": "rgbw", "name": "RGBW (4ch: R G B W)", "channels": ["r", "g", "b", "w"] },
+  { "id": "dimmer-rgbw", "name": "Dimmer + RGBW (5ch: Dim R G B W)", "channels": ["dim", "r", "g", "b", "w"] },
+  { "id": "rgbw-dimmer", "name": "RGBW + Dimmer (5ch: R G B W Dim)", "channels": ["r", "g", "b", "w", "dim"] },
+  { "id": "dimmer-strobe-rgb", "name": "Dimmer + Strobe + RGB (5ch: Dim Strobe R G B)", "channels": ["dim", "none", "r", "g", "b"] },
+  { "id": "generic-7ch", "name": "Generic 7ch (Dim R G B Strobe Macro Speed)", "channels": ["dim", "r", "g", "b", "none", "none", "none"] },
+  { "id": "generic-8ch-rgbw", "name": "Generic 8ch (Dim R G B W Strobe Macro Speed)", "channels": ["dim", "r", "g", "b", "w", "none", "none", "none"] },
+  { "id": "led-par-10ch", "name": "LED PAR 10ch (Dim R G B W A UV Strobe Macro Speed) – A/UV ignored", "channels": ["dim", "r", "g", "b", "w", "none", "none", "none", "none", "none"] }
+]
