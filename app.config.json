@@ -1,10 +1,10 @@
 {
   "appName": "DK EDITS VJ PLAYER",
-  "mode": "online",
-  "appUrl": "https://vj2.dkedits.in",
+  "mode": "auto",
+  "appUrl": "https://vj2.dkedits.in/",
   "localPort": 18080,
-  "statusUrl": "",
-  "expiresOn": "",
+  "statusUrl": "https://vj2.dkedits.in/app-status.json",
+  "expiresOn": "2026-11-14",
   "autoOpenOutput": true,
   "controllerFullscreen": false,
   "statusCheckMinutes": 5

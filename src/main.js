@@ -29,6 +29,7 @@ let mainWin = null;
 let bridge = null;
 let target = '';            // the one URL this app is allowed to show
 let blocked = false;
+let activeMode = '';
 let psb = null, psb2 = null;
 let statusTimer = null;
 const outputs = new Set();
@@ -210,35 +211,55 @@ function createMain() {
   });
   mainWin.once('ready-to-show', () => { mainWin.show(); mainWin.maximize(); });
   mainWin.setMenuBarVisibility(false);
+  mainWin.on('page-title-updated', (e) => e.preventDefault());
 
   mainWin.webContents.setWindowOpenHandler(childOpenHandler);
   mainWin.webContents.on('did-create-window', (win, details) => wireChild(win, details.url));
   mainWin.webContents.on('will-navigate', (e, url) => { if (!allowedUrl(url)) e.preventDefault(); });
   mainWin.webContents.on('did-fail-load', (e, code, desc, url, isMain) => {
-    if (isMain && code !== -3 && !blocked && url && !url.startsWith('file:')) showBlocked('offline');
+    if (!isMain || code === -3 || blocked || !url || url.startsWith('file:')) return;
+    if (cfg.mode === 'auto' && !forced && activeMode === 'online') { autoFallback = true; load(); return; }
+    showBlocked('offline');
   });
   mainWin.webContents.on('did-finish-load', () => { if (!blocked) armOutputWatcher(); });
   mainWin.on('closed', () => { mainWin = null; app.quit(); });
 }
 
-async function load() {
+let forced = null;          // 'online' | 'local' | null(=app.config.json mode), chosen from the View menu
+let autoFallback = false;   // online page died while running in "auto" mode -> go offline once
+async function fetchTimeout(url, ms) {
+  const ac = new AbortController(); const t = setTimeout(() => ac.abort(), ms);
+  try { return await net.fetch(url, { cache: 'no-store', signal: ac.signal }); } finally { clearTimeout(t); }
+}
+function closeOutputs() { for (const w of Array.from(outputs)) { try { w.destroy(); } catch (e) { /* ignore */ } } outputs.clear(); userClosed = false; }
+
+async function load(force) {
+  if (force) forced = force === 'auto' ? null : force;
   blocked = false;
   if (!mainWin || mainWin.isDestroyed()) return;
   const st = await checkStatus();
   if (!st.ok) return showBlocked(st.kind, st.msg);
 
-  if (cfg.mode === 'local') {
+  let mode = autoFallback ? 'local' : (forced || cfg.mode);   // 'auto' | 'online' | 'local'
+  autoFallback = false;
+  if (mode !== 'local') {
+    let r = null;
+    if (cfg.appUrl) { try { r = await fetchTimeout(cfg.appUrl, 6000); } catch (e) { r = null; } }
+    if (r && (r.status === 404 || r.status === 410)) return showBlocked('removed');   // URL taken down = switched off
+    if (r && r.ok) mode = 'online';
+    else if (mode === 'auto') mode = 'local';                                         // no internet -> bundled offline copy
+    else return showBlocked('offline');
+  }
+  closeOutputs();
+  if (mode === 'local') {
     if (!bridge) startBridge();
     target = 'http://127.0.0.1:' + cfg.localPort + '/';
     if (!(await waitForPort(cfg.localPort, 20000))) return showBlocked('offline', 'Local player could not start (port ' + cfg.localPort + ' busy?).');
   } else {
     target = cfg.appUrl;
-    try {
-      const r = await net.fetch(target, { method: 'GET', cache: 'no-store' });
-      if (r.status === 404 || r.status === 410) return showBlocked('removed');
-      if (!r.ok) return showBlocked('offline');
-    } catch (e) { return showBlocked('offline'); }
   }
+  activeMode = mode;
+  mainWin.setTitle(cfg.appName + (mode === 'local' ? '  —  OFFLINE copy' : '  —  ONLINE'));
   mainWin.loadURL(target);
 }
 
@@ -248,6 +269,10 @@ function buildMenu() {
     ...(isMac ? [{ label: cfg.appName, submenu: [{ role: 'about' }, { type: 'separator' }, { role: 'hide' }, { role: 'hideOthers' }, { type: 'separator' }, { role: 'quit' }] }] : []),
     { label: 'View', submenu: [
       { label: 'Reload', accelerator: 'CmdOrCtrl+R', click: () => load() },
+      { label: 'Use online website', click: () => load('online') },
+      { label: 'Use offline copy (Tiger Touch / no internet)', click: () => load('local') },
+      { label: 'Auto (online if available, else offline)', click: () => load('auto') },
+      { type: 'separator' },
       { label: 'Toggle full screen', accelerator: isMac ? 'Ctrl+Cmd+F' : 'F11', click: () => { if (mainWin) mainWin.setFullScreen(!mainWin.isFullScreen()); } },
       { label: 'Open output on extended screen', accelerator: 'CmdOrCtrl+Shift+O', click: () => autoOpenOutput() }
     ] },
