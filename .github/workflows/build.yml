@@ -18,15 +18,15 @@ jobs:
         if: matrix.os == 'windows-latest'
         shell: pwsh
         run: |
-          for ($i = 1; $i -le 5; $i++) {
-            if ($i -ge 3) {
-              Write-Host "Using mirror downloads"
+          for ($i = 1; $i -le 6; $i++) {
+            if ($i -ge 2) {
+              Write-Host "Attempt $i with mirror downloads"
               $env:ELECTRON_MIRROR = "https://npmmirror.com/mirrors/electron/"
               $env:ELECTRON_BUILDER_BINARIES_MIRROR = "https://npmmirror.com/mirrors/electron-builder-binaries/"
             }
             npx electron-builder --win --x64 --publish never
             if ($LASTEXITCODE -eq 0) { exit 0 }
-            Write-Host "Attempt $i failed, retrying in 30 seconds..."
+            Write-Host "Attempt $i failed, waiting 30 seconds..."
             Start-Sleep -Seconds 30
           }
           exit 1
@@ -34,9 +34,14 @@ jobs:
         if: matrix.os == 'macos-latest'
         shell: bash
         run: |
-          for i in 1 2 3 4 5; do
+          for i in 1 2 3 4 5 6; do
+            if [ "$i" -ge 2 ]; then
+              echo "Attempt $i with mirror downloads"
+              export ELECTRON_MIRROR="https://npmmirror.com/mirrors/electron/"
+              export ELECTRON_BUILDER_BINARIES_MIRROR="https://npmmirror.com/mirrors/electron-builder-binaries/"
+            fi
             npx electron-builder --mac --universal --publish never && exit 0
-            echo "Attempt $i failed, retrying in 30 seconds..."
+            echo "Attempt $i failed, waiting 30 seconds..."
             sleep 30
           done
           exit 1
