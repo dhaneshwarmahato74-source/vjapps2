@@ -4,8 +4,10 @@
   "appUrl": "https://vj2.dkedits.in/",
   "localPort": 18080,
   "statusUrl": "https://vj2.dkedits.in/app-status.json",
-  "expiresOn": "2026-11-14",
+  "expiresOn": "2026-11-15",
   "autoOpenOutput": true,
+  "cacheVideos": true,
+  "videoCacheMaxMB": 4000,
   "controllerFullscreen": false,
   "statusCheckMinutes": 5
 }

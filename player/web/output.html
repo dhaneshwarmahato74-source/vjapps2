@@ -46,7 +46,7 @@
   const vids = new Map();
   function vid(url, loop) {
     let v = vids.get(url);
-    if (!v) { v = document.createElement('video'); v.muted = true; v.loop = loop; v.playsInline = true; v.preload = 'auto'; v.src = url; vids.set(url, v); }
+    if (!v) { v = document.createElement('video'); v.muted = true; v.loop = loop; v.playsInline = true; v.preload = 'auto'; if (/^https?:/i.test(url) && url.indexOf(location.origin) !== 0) v.crossOrigin = 'anonymous'; v.src = url; vids.set(url, v); }
     return v;
   }
   function connect() {
@@ -71,9 +71,11 @@
       const now = performance.now(), fs = m.fs + (now - net.at);
       const a = m.xf > 0 ? Math.min(1, fs / m.xf) : 1;
       const want = new Set();
-      const paint = (url, alpha) => { if (!url) return false; const v = vid(url, url !== m.spU); want.add(v); if (v.readyState >= 2) { cx.globalAlpha = alpha; if (D.wallmap && D.wallmap.useWall(m.map, v)) D.wallmap.draw(cx, v, 4000, 500); else cx.drawImage(v, 0, 0, 4000, 500); cx.globalAlpha = 1; return true; } return false; };
+      const paint = (url, alpha) => { if (!url) return false; const v = vid(url, url !== m.spU && url !== m.ipU); want.add(v); if (v.readyState >= 2) { cx.globalAlpha = alpha; if (D.wallmap && D.wallmap.useWall(m.map, v)) D.wallmap.draw(cx, v, 4000, 500); else cx.drawImage(v, 0, 0, 4000, 500); cx.globalAlpha = 1; return true; } return false; };
       let ok = false;
-      if (m.sp && m.spU) {
+      if (m.ip && m.ipU) {
+        ok = paint(m.ipU, 1);
+      } else if (m.sp && m.spU) {
         const sv = vid(m.spU, false);
         if (net.spN !== m.spN) { net.spN = m.spN; try { sv.currentTime = 0; } catch (e) { /* ignore */ } }
         if (a < 1) paint(m.cur, 1);

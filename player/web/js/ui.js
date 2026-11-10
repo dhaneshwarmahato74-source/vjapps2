@@ -296,27 +296,39 @@
   }
 
   /* ---------------- video layer ---------------- */
+  const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const clipStat = (c) => c.error ? 'load nahi hua (link / CORS)' : c.w ? c.w + '×' + c.h + (c.w !== 4000 || c.h !== 500 ? ' (scaled)' : '') : 'loading…';
   function renderSlots() {
     const V = D.video, box = $('#vslots');
-    const upTxt = (s) => s.up === 'uploading' ? ' · uploading…' : s.up === 'error' ? ' · UPLOAD FAILED' : '';
-    box.innerHTML = (V.notice ? '<div class="sub warn" style="color:var(--warn)">' + V.notice + '</div>' : '') + V.slots.map((s, i) => '<div class="vslot' + (i === V.cur ? ' active' : '') + '"><b>' + (i + 1) + '</b><span title="' + s.name + '">' + s.name + '</span><small class="' + (s.error || s.up === 'error' ? 'warn' : (s.w && (s.w !== 4000 || s.h !== 500) ? 'warn' : '')) + '" title="' + (s.upMsg ? 'Output window cannot play this clip: ' + s.upMsg : '') + '">' + (s.error ? 'cannot decode (use H.264 MP4 or WebM)' : s.w ? s.w + '×' + s.h + (s.w !== 4000 || s.h !== 500 ? ' (scaled)' : '') : 'loading…') + upTxt(s) + '</small>' + (s.up === 'error' ? '<button class="btn sm" data-retry="' + i + '"><svg class="ic" aria-hidden="true"><use href="#i-refresh"/></svg>retry</button>' : '') + '<button class="btn sm" data-rm="' + i + '" aria-label="Remove clip"><svg class="ic" aria-hidden="true"><use href="#i-close"/></svg></button></div>').join('') || '<div class="sub">No videos loaded – strobe plays on black.</div>';
-    $$('[data-retry]', box).forEach((b) => b.addEventListener('click', (e) => { e.stopPropagation(); V.retryUpload(+b.dataset.retry); }));
-    $$('[data-rm]', box).forEach((b) => b.addEventListener('click', () => V.remove(+b.dataset.rm)));
-    box.querySelectorAll('.vslot').forEach((r, i) => r.addEventListener('click', (e) => { if (e.target.dataset.rm === undefined && S.mode === 'manual') V.choose('manual', i); }));
+    const norm = V.library.filter((x) => x.kind === 'normal');
+    box.innerHTML = (V.notice ? '<div class="sub warn" style="color:var(--warn)">' + esc(V.notice) + '</div>' : '')
+      + (V.libError ? '<div class="sub warn" style="color:var(--warn)">Video list load nahi hui: ' + esc(V.libError) + '</div>' : '')
+      + norm.map((x, n) => {
+        const i = V.slots.findIndex((q) => q.id === x.id), c = V.slots[i], on = !!V.on[x.id];
+        return '<div class="vslot' + (c && i === V.cur ? ' active' : '') + '" data-id="' + esc(x.id) + '"><b>' + (n + 1) + '</b><span title="' + esc(x.name) + '">' + esc(x.name) + '</span><small class="' + (c && c.error ? 'warn' : '') + '">' + (c ? clipStat(c) : 'OFF') + '</small><label class="check small"><input type="checkbox" data-vt="' + esc(x.id) + '"' + (on ? ' checked' : '') + '> ON</label></div>';
+      }).join('') || '<div class="sub">Abhi koi video nahi – Admin page se link add karo.</div>';
+    $$('[data-vt]', box).forEach((c) => c.addEventListener('change', () => V.toggle(c.dataset.vt, c.checked)));
+    box.querySelectorAll('.vslot').forEach((r) => r.addEventListener('click', (e) => { if (e.target.closest('label')) return; const i = V.slots.findIndex((q) => q.id === r.dataset.id); if (i >= 0 && S.mode === 'manual') V.choose('manual', i); }));
   }
   function renderSpecial() {
-    const sp = D.video.special, box = $('#specialSlot');
-    box.innerHTML = sp ? '<div class="vslot' + (D.video.sp ? ' active' : '') + '"><b>★</b><span title="' + sp.name + '">' + sp.name + '</span><small class="' + (sp.error ? 'warn' : '') + '">' + (sp.error ? 'cannot decode' : sp.w ? sp.w + '×' + sp.h + (sp.dur ? ' · ' + Math.round(sp.dur) + ' s' : '') : 'loading…') + '</small><button class="btn sm" data-rmsp="1"' + (D.video.sp ? ' disabled' : '') + ' aria-label="Remove special clip"><svg class="ic" aria-hidden="true"><use href="#i-close"/></svg></button></div><div class="sub" id="spStatus"></div>' : '<div class="sub">No special video loaded.</div>';
-    const b = $('[data-rmsp]', box); if (b) b.addEventListener('click', () => D.video.clearSpecial());
-    $('#btnSpecialNow').disabled = !sp || D.video.sp;
+    const V = D.video, sp = V.special, x = V.library.find((q) => q.kind === 'special'), box = $('#specialSlot');
+    box.innerHTML = x ? '<div class="vslot' + (V.sp ? ' active' : '') + '"><b>★</b><span title="' + esc(x.name) + '">' + esc(x.name) + '</span><small class="' + (sp && sp.error ? 'warn' : '') + '">' + (sp && sp.id === x.id ? clipStat(sp) + (sp.dur ? ' · ' + Math.round(sp.dur) + ' s' : '') : 'OFF') + '</small><label class="check small"><input type="checkbox" data-vts="' + esc(x.id) + '"' + (V.on[x.id] ? ' checked' : '') + (V.sp ? ' disabled' : '') + '> ON</label></div><div class="sub" id="spStatus"></div>' : '<div class="sub">Special video set nahi hai (Admin page se add karo).</div>';
+    const c = $('[data-vts]', box); if (c) c.addEventListener('change', () => V.toggle(c.dataset.vts, c.checked));
+    $('#btnSpecialNow').disabled = !sp || V.sp;
   }
-  $('#specialFile').addEventListener('change', (e) => { if (e.target.files[0]) D.video.setSpecial(e.target.files[0]); e.target.value = ''; });
+  function renderIntro() {
+    const V = D.video, ip = V.intro, x = V.library.find((q) => q.kind === 'intro'), box = $('#introSlot');
+    box.innerHTML = x ? '<div class="vslot' + (V.ip ? ' active' : '') + '"><b>▶</b><span title="' + esc(x.name) + '">' + esc(x.name) + '</span><small class="' + (ip && ip.error ? 'warn' : '') + '">' + (V.introDone ? 'played' : ip && ip.id === x.id ? clipStat(ip) + (ip.dur ? ' · ' + Math.round(ip.dur) + ' s' : '') : 'OFF') + '</small><label class="check small"><input type="checkbox" data-vti="' + esc(x.id) + '"' + (V.on[x.id] ? ' checked' : '') + (V.ip ? ' disabled' : '') + '> ON</label></div>' : '<div class="sub">Starting promo video set nahi hai (Admin page se add karo).</div>';
+    const c = $('[data-vti]', box); if (c) c.addEventListener('change', () => D.video.toggle(c.dataset.vti, c.checked));
+  }
+  D.bus.on('video-slots', renderIntro); D.bus.on('video-change', renderIntro);
   $('#btnSpecialNow').addEventListener('click', () => D.video.startSpecial());
+  $('#btnVideoRefresh').addEventListener('click', () => D.video.load());
   D.bus.on('video-slots', renderSpecial); D.bus.on('video-change', () => { renderSpecial(); $('#btnVideoNext').disabled = S.mode !== 'manual' || D.video.sp; });
-  $('#videoFiles').addEventListener('change', (e) => { D.video.add(Array.from(e.target.files)); e.target.value = ''; });
   $('#btnVideoNext').addEventListener('click', () => D.video.change('manual', 0));
   D.bus.on('video-slots', renderSlots); D.bus.on('video-change', renderSlots);
   D.bus.on('mode', () => { $('#btnVideoNext').disabled = S.mode !== 'manual'; });
+  renderSlots(); renderSpecial(); renderIntro();
 
   /* ---------------- main loop ---------------- */
   let lastDraw = 0;
@@ -373,7 +385,7 @@
     const wm = $('#warnModal'), ack = $('#warnAck'), ok = $('#warnOk');
     S.blackout = true; // output stays dark until the warning is acknowledged
     ack.addEventListener('change', () => { ok.disabled = !ack.checked; });
-    ok.addEventListener('click', () => { wm.classList.remove('open'); E.setBlackout(false); });
+    ok.addEventListener('click', () => { wm.classList.remove('open'); E.setBlackout(false); D.video.requestIntro(); });
     D.bus.emit('blackout', true);
     window.__dls = D; // handy for debugging / tests
   }

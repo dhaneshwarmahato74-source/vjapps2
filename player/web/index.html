@@ -207,18 +207,20 @@
 
     <div class="pane-body" data-pane="video" role="tabpanel" hidden>
       <section class="sec">
-      <div class="sec-h"><h2><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-film"/></svg>Video layer <small>4 + 1 special · 4000×500</small></h2><label class="check small"><input type="checkbox" data-cfg="video.enabled"> On</label></div>
+      <div class="sec-h"><h2><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-film"/></svg>Video layer <small>max 5 ON + 1 special + 1 promo · 4000×500</small></h2><label class="check small"><input type="checkbox" data-cfg="video.enabled"> On</label></div>
       <div class="row wrap gap">
-        <input type="file" id="videoFiles" accept="video/*" multiple>
+        <button class="btn" id="btnVideoRefresh" title="Admin page ki latest video list laao">↻ Refresh list</button>
+        <a class="btn" href="admin.html" target="_blank" rel="noopener" title="Video links add / remove (password)">Admin</a>
         <button class="btn" id="btnVideoNext" title="Comma / Period keys in Manual mode">Next video (random)</button>
       </div>
       <div class="vslots" id="vslots"></div>
       <div class="label">Special video <span class="sub">one clip, comes back every 4–5 min, plays to the end, cannot be skipped</span></div>
       <div class="row wrap gap">
-        <input type="file" id="specialFile" accept="video/*">
         <button class="btn sm" id="btnSpecialNow" title="Starts it now (for testing). Once started it cannot be skipped.">Play special now</button>
       </div>
       <div class="vslots" id="specialSlot"></div>
+      <div class="label">Starting promo video <span class="sub">plays once when the site is switched on (3–15 s), then normal videos start</span></div>
+      <div class="vslots" id="introSlot"></div>
       <div class="row wrap gap">
         <label class="field">Earliest (min) <input type="number" data-cfg="video.specialMinMin" data-type="float" min="0.1" max="60" step="0.5"></label>
         <label class="field">Latest (min) <input type="number" data-cfg="video.specialMaxMin" data-type="float" min="0.1" max="60" step="0.5"></label>
@@ -238,7 +240,7 @@
         </label>
         <label class="check small"><input type="checkbox" data-cfg="video.warm"> Keep all clips running (instant cuts)</label>
       </div>
-      <div class="sub">Videos change only on the active source: beats in Audio mode, console pulse (channel set in Settings) or flash count in Tiger mode, buttons / <kbd>,</kbd> <kbd>.</kbd> in Manual mode. Clips are muted; files stay in this browser session only.</div>
+      <div class="sub">Videos change only on the active source: beats in Audio mode, console pulse (channel set in Settings) or flash count in Tiger mode, buttons / <kbd>,</kbd> <kbd>.</kbd> in Manual mode. Clips are muted. Videos are managed on the Admin page; here you only switch them ON / OFF (remembered on this device).</div>
     </section>
     </div>
 
@@ -466,6 +468,8 @@
 <script src="js/sync.js"></script>
 <script src="js/wallmap.js"></script>
 <script src="js/neon.js"></script>
+<script src="js/appwrite-config.js"></script>
+<script src="js/backend.js"></script>
 <script src="js/video.js"></script>
 <script src="js/ui.js"></script>
 <script src="js/learn.js"></script>

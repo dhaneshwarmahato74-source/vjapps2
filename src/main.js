@@ -8,12 +8,14 @@
  *  - Optional mode "local": runs the bundled Art-Net bridge inside the app (offline, Tiger Touch works).
  */
 const { app, BrowserWindow, Menu, dialog, ipcMain, shell, screen, session, powerSaveBlocker, net, utilityProcess, systemPreferences } = require('electron');
+const crypto = require('crypto');
+const { Readable } = require('stream');
 const path = require('path');
 const fs = require('fs');
 const http = require('http');
 const { spawn, execFile } = require('child_process');
 
-const DEFAULTS = { appName: 'DK EDITS VJ PLAYER', mode: 'online', appUrl: '', localPort: 18080, statusUrl: '', expiresOn: '', autoOpenOutput: true, forceExtend: true, controllerFullscreen: false, statusCheckMinutes: 5 };
+const DEFAULTS = { appName: 'DK EDITS VJ PLAYER', mode: 'online', appUrl: '', localPort: 18080, statusUrl: '', expiresOn: '', autoOpenOutput: true, cacheVideos: true, videoCacheMaxMB: 4000, forceExtend: true, controllerFullscreen: false, statusCheckMinutes: 5 };
 let cfg = DEFAULTS;
 try { cfg = Object.assign({}, DEFAULTS, JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'app.config.json'), 'utf8'))); } catch (e) { /* defaults */ }
 
@@ -60,6 +62,7 @@ async function waitForPort(port, ms) {
 }
 
 // ---------------------------------------------------------------- local bridge (mode: "local")
+function siteDir() { return path.join(app.getPath('userData'), 'site'); }
 function startBridge() {
   const root = playerRoot();
   const userCfg = path.join(app.getPath('userData'), 'config.json');
@@ -67,7 +70,7 @@ function startBridge() {
     if (!fs.existsSync(userCfg)) { fs.mkdirSync(path.dirname(userCfg), { recursive: true }); fs.copyFileSync(path.join(root, 'config', 'config.json'), userCfg); }
   } catch (e) { /* bridge creates defaults */ }
   bridge = utilityProcess.fork(path.join(root, 'bridge', 'server.js'), ['--port', String(cfg.localPort)], {
-    env: Object.assign({}, process.env, { DLS_CONFIG: userCfg }), stdio: 'ignore'
+    env: Object.assign({}, process.env, { DLS_CONFIG: userCfg, DLS_WEB_OVERLAY: siteDir() }), stdio: 'ignore'
   });
 }
 function stopBridge() { try { if (bridge) bridge.kill(); } catch (e) { /* ignore */ } bridge = null; }
@@ -221,7 +224,7 @@ function createMain() {
     if (cfg.mode === 'auto' && !forced && activeMode === 'online') { autoFallback = true; load(); return; }
     showBlocked('offline');
   });
-  mainWin.webContents.on('did-finish-load', () => { if (!blocked) armOutputWatcher(); });
+  mainWin.webContents.on('did-finish-load', () => { if (!blocked) armOutputWatcher(); if (!blocked && activeMode === 'online') setTimeout(() => syncSite('load'), 6000); });
   mainWin.on('closed', () => { mainWin = null; app.quit(); });
 }
 
@@ -231,6 +234,57 @@ async function fetchTimeout(url, ms) {
   const ac = new AbortController(); const t = setTimeout(() => ac.abort(), ms);
   try { return await net.fetch(url, { cache: 'no-store', signal: ac.signal }); } finally { clearTimeout(t); }
 }
+// ---------------------------------------------------------------- offline copy of the LIVE website
+// While online the app saves the website's files (page, scripts, css, images, clips.js ...) to its own folder.
+// The offline mode (bridge, Tiger Touch) then serves that saved copy, so website updates reach it without a new installer.
+let syncing = false, lastSync = 0;
+function skipRef(r) { return !r || /^(data:|blob:|mailto:|tel:|javascript:|#|\/\/)/i.test(r) || /^[a-z]+:/i.test(r) && !/^https?:/i.test(r); }
+async function syncSite(why) {
+  if (process.env.DK_DEBUG) console.log('SYNC START', why, 'syncing=' + syncing, 'blocked=' + blocked, 'mode=' + cfg.mode, 'forced=' + forced, 'active=' + activeMode);
+  if (syncing || blocked || !cfg.appUrl || cfg.mode === 'local' || (forced === 'local')) return;
+  syncing = true;
+  const base = new URL(cfg.appUrl), tmp = siteDir() + '.new';
+  try {
+    fs.rmSync(tmp, { recursive: true, force: true }); fs.mkdirSync(tmp, { recursive: true });
+    const queue = ['', 'index.html', 'output.html', 'mapper.html', 'admin.html', 'manifest.webmanifest', 'sw.js'];
+    try {                                      // everything the live page really loaded (also dynamic files)
+      if (mainWin && !mainWin.isDestroyed() && activeMode === 'online') {
+        const names = await mainWin.webContents.executeJavaScript("performance.getEntriesByType('resource').map(function(e){return e.name})");
+        for (const n of names) queue.push(n);
+      }
+    } catch (e) { /* ignore */ }
+    const seen = new Set(); let total = 0, count = 0;
+    while (queue.length) {
+      const ref = queue.shift(); if (skipRef(ref)) continue;
+      let u; try { u = new URL(ref, base); } catch (e) { continue; }
+      u.hash = '';
+      if (u.origin !== base.origin || !u.pathname.startsWith(base.pathname)) continue;
+      let rel = decodeURIComponent(u.pathname.slice(base.pathname.length));
+      if (rel === '' || rel.endsWith('/')) rel += 'index.html';
+      if (/^(api|ws|media)(\/|$)/.test(rel) || /\.(mp4|webm|m4v|mov|mkv)$/i.test(rel) || rel.includes('..') || seen.has(rel)) continue;
+      seen.add(rel);
+      let r; try { r = await fetchTimeout(u.href, 30000); } catch (e) { r = null; }
+      if (!r || !r.ok) { if (rel === 'index.html') throw new Error('index.html not reachable'); continue; }
+      const buf = Buffer.from(await r.arrayBuffer());
+      total += buf.length; if (total > 80 * 1024 * 1024) throw new Error('site too big');
+      const out = path.join(tmp, rel); fs.mkdirSync(path.dirname(out), { recursive: true }); fs.writeFileSync(out, buf); count++;
+      const ext = path.extname(rel).toLowerCase();
+      if (ext === '.html' || ext === '.htm') { for (const m of buf.toString('utf8').matchAll(/(?:src|href)\s*=\s*["']([^"'#]+)["']/gi)) queue.push(new URL(m[1], u).href); }
+      if (ext === '.css') { for (const m of buf.toString('utf8').matchAll(/url\(\s*["']?([^"')]+)["']?\s*\)/gi)) queue.push(new URL(m[1], u).href); }
+    }
+    if (!seen.has('index.html') || !fs.existsSync(path.join(tmp, 'index.html'))) throw new Error('no index.html');
+    fs.writeFileSync(path.join(tmp, '.synced.json'), JSON.stringify({ at: new Date().toISOString(), url: cfg.appUrl, files: count }));
+    fs.rmSync(siteDir(), { recursive: true, force: true }); fs.renameSync(tmp, siteDir());
+    lastSync = Date.now();
+    if (mainWin && !mainWin.isDestroyed() && activeMode === 'online') mainWin.setTitle(cfg.appName + '  —  ONLINE  (offline copy updated ' + new Date().toLocaleTimeString() + ')');
+    if (process.env.DK_DEBUG) console.log('SYNC OK', why, count, 'files');
+  } catch (e) {
+    try { fs.rmSync(tmp, { recursive: true, force: true }); } catch (x) { /* ignore */ }   // keep the previous good copy
+    if (process.env.DK_DEBUG) console.log('SYNC FAIL', e.message);
+  }
+  syncing = false;
+}
+
 function closeOutputs() { for (const w of Array.from(outputs)) { try { w.destroy(); } catch (e) { /* ignore */ } } outputs.clear(); userClosed = false; }
 
 async function load(force) {
@@ -263,6 +317,131 @@ async function load(force) {
   mainWin.loadURL(target);
 }
 
+// ---------------------------------------------------------------- video cache (bunny.net etc.)
+// Every video file (.mp4/.webm/.m4v/.mov) the page plays from another server is saved on this computer the first time
+// it is played; later plays come from the local file (smooth, no stutter, no re-download). Internet is still needed for
+// the first download and for the website itself.
+const VIDEO_RE = /\.(mp4|webm|m4v|mov)$/i;
+const vcDir = () => path.join(app.getPath('userData'), 'videocache');
+const downloading = new Map(), revalidated = new Set();
+const vcKey = (u) => crypto.createHash('sha1').update(u.origin + u.pathname).digest('hex');
+function vcCacheable(request) {
+  if (!cfg.cacheVideos || request.method !== 'GET') return null;
+  let u; try { u = new URL(request.url); } catch (e) { return null; }
+  if (!VIDEO_RE.test(u.pathname)) return null;
+  if (target && u.origin === originOf(target)) return null;                       // the site's own files are handled elsewhere
+  if (/^(127\.0\.0\.1|localhost)$/.test(u.hostname) && u.port === String(cfg.localPort)) return null;
+  return u;
+}
+function vcMeta(key) {
+  try {
+    const m = JSON.parse(fs.readFileSync(path.join(vcDir(), key + '.json'), 'utf8'));
+    return m.complete && fs.statSync(path.join(vcDir(), key + '.bin')).size === m.size ? m : null;
+  } catch (e) { return null; }
+}
+function vcRemove(key) { for (const x of ['.bin', '.json', '.part']) { try { fs.rmSync(path.join(vcDir(), key + x), { force: true }); } catch (e) { /* ignore */ } } }
+function vcTrim(keep) {
+  try {
+    const max = Math.max(200, cfg.videoCacheMaxMB || 4000) * 1024 * 1024;
+    const files = fs.readdirSync(vcDir()).filter((f) => f.endsWith('.bin')).map((f) => { const st = fs.statSync(path.join(vcDir(), f)); return { key: f.slice(0, -4), size: st.size, t: st.mtimeMs }; });
+    let sum = files.reduce((a, f) => a + f.size, 0);
+    for (const f of files.sort((a, b) => a.t - b.t)) { if (sum <= max) break; if (f.key === keep) continue; vcRemove(f.key); sum -= f.size; }
+  } catch (e) { /* ignore */ }
+}
+function vcDownload(key, url) {
+  if (downloading.has(key)) return;
+  const part = path.join(vcDir(), key + '.part');
+  const job = (async () => {
+    fs.mkdirSync(vcDir(), { recursive: true });
+    const r = await net.fetch(url, { bypassCustomProtocolHandlers: true, cache: 'no-store' });
+    if (r.status !== 200 || !r.body) throw new Error('HTTP ' + r.status);
+    const len = Number(r.headers.get('content-length')) || 0;
+    await new Promise((res, rej) => { const ws = fs.createWriteStream(part), rs = Readable.fromWeb(r.body); rs.on('error', rej); ws.on('error', rej); ws.on('finish', res); rs.pipe(ws); });
+    const size = fs.statSync(part).size;
+    if (!size || (len && size !== len)) throw new Error('incomplete download');
+    fs.renameSync(part, path.join(vcDir(), key + '.bin'));
+    fs.writeFileSync(path.join(vcDir(), key + '.json'), JSON.stringify({ complete: true, size, url: url.split('?')[0], type: r.headers.get('content-type') || '', etag: r.headers.get('etag') || '', lm: r.headers.get('last-modified') || '', at: Date.now() }));
+    vcTrim(key);
+    if (process.env.DK_DEBUG) console.log('VCACHE saved', url, size);
+  })().catch((e) => { try { fs.rmSync(part, { force: true }); } catch (x) { /* ignore */ } if (process.env.DK_DEBUG) console.log('VCACHE fail', e.message); }).finally(() => downloading.delete(key));
+  downloading.set(key, job);
+}
+function vcRevalidate(key, url, meta) {          // once per run: if the file on the server changed, drop our copy
+  if (revalidated.has(key)) return; revalidated.add(key);
+  net.fetch(url, { method: 'HEAD', bypassCustomProtocolHandlers: true, cache: 'no-store' }).then((r) => {
+    if (!r.ok) return;
+    const len = Number(r.headers.get('content-length')) || 0, et = r.headers.get('etag') || '', lm = r.headers.get('last-modified') || '';
+    if ((len && len !== meta.size) || (et && meta.etag && et !== meta.etag) || (lm && meta.lm && lm !== meta.lm)) vcRemove(key);
+  }).catch(() => { /* offline: keep using the saved copy */ });
+}
+function vcFileResponse(file, meta, range) {
+  const size = meta.size; let start = 0, end = size - 1, status = 200;
+  const m = /bytes=(\d*)-(\d*)/.exec(range || '');
+  if (m) {
+    if (m[1] !== '') { start = +m[1]; if (m[2] !== '') end = Math.min(+m[2], size - 1); } else if (m[2] !== '') start = Math.max(0, size - +m[2]);
+    if (start > end || start >= size) return new Response(null, { status: 416, headers: { 'Content-Range': 'bytes */' + size } });
+    status = 206;
+  }
+  const h = { 'Content-Type': meta.type || (/\.webm/i.test(meta.url || '') ? 'video/webm' : 'video/mp4'), 'Accept-Ranges': 'bytes', 'Content-Length': String(end - start + 1), 'Access-Control-Allow-Origin': '*', 'Cross-Origin-Resource-Policy': 'cross-origin' };
+  if (status === 206) h['Content-Range'] = 'bytes ' + start + '-' + end + '/' + size;
+  return new Response(Readable.toWeb(fs.createReadStream(file, { start, end })), { status, headers: h });
+}
+async function vcHandle(request, u) {
+  const key = vcKey(u), meta = vcMeta(key);
+  if (meta) {
+    const file = path.join(vcDir(), key + '.bin');
+    try { const now = new Date(); fs.utimesSync(file, now, now); } catch (e) { /* ignore */ }
+    vcRevalidate(key, request.url, meta);
+    return vcFileResponse(file, meta, request.headers.get('range'));
+  }
+  vcDownload(key, request.url);                                     // save it in the background ...
+  return net.fetch(request, { bypassCustomProtocolHandlers: true }); // ... and play from the server right now
+}
+// ---------------------------------------------------------------- Appwrite video list: saved so everything works without internet
+// When online: the list of video links is saved and ALL its videos are downloaded in the background (video cache).
+// When offline: the saved list is served instead.
+const LIST_RE = /\/(tablesdb\/[^/]+\/tables|databases\/[^/]+\/collections)\/[^/]+\/(rows|documents)$/;
+const listDir = () => path.join(app.getPath('userData'), 'listcache');
+function listFile(url) { return path.join(listDir(), crypto.createHash('sha1').update(url).digest('hex') + '.json'); }
+function prefetchVideos(buf) {
+  try {
+    const j = JSON.parse(buf.toString('utf8'));
+    for (const row of (j.rows || j.documents || [])) {
+      let u; try { u = new URL(row.url); } catch (e) { continue; }
+      if (!/^https?:$/.test(u.protocol) || !VIDEO_RE.test(u.pathname)) continue;
+      const key = vcKey(u); if (!vcMeta(key)) vcDownload(key, row.url);
+    }
+  } catch (e) { /* ignore */ }
+}
+async function listPass(request) {
+  const cors = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': '*', 'Access-Control-Allow-Methods': 'GET, OPTIONS' };
+  if (request.method === 'OPTIONS') {
+    try { return await net.fetch(request, { bypassCustomProtocolHandlers: true }); } catch (e) { return new Response(null, { status: 204, headers: cors }); }
+  }
+  const file = listFile(request.url);
+  try {
+    const r = await net.fetch(request, { bypassCustomProtocolHandlers: true });
+    if (r.ok && cfg.cacheVideos !== false) {
+      const buf = Buffer.from(await r.clone().arrayBuffer());
+      try { fs.mkdirSync(listDir(), { recursive: true }); fs.writeFileSync(file, buf); } catch (e) { /* ignore */ }
+      prefetchVideos(buf);
+    }
+    return r;
+  } catch (e) {
+    try { return new Response(fs.readFileSync(file), { status: 200, headers: Object.assign({ 'Content-Type': 'application/json' }, cors) }); } catch (x) { throw e; }
+  }
+}
+
+async function videoCacheDialog() {
+  let n = 0, bytes = 0;
+  try { for (const f of fs.readdirSync(vcDir())) if (f.endsWith('.bin')) { n++; bytes += fs.statSync(path.join(vcDir(), f)).size; } } catch (e) { /* empty */ }
+  const { response } = await dialog.showMessageBox(mainWin && !mainWin.isDestroyed() ? mainWin : undefined, {
+    type: 'info', buttons: ['OK', 'Clear video cache'], defaultId: 0, cancelId: 0, message: 'Saved videos: ' + n + ' (' + (bytes / 1048576).toFixed(0) + ' MB)',
+    detail: 'Videos are saved here the first time they play, so later plays are smooth. Limit: ' + (cfg.videoCacheMaxMB || 4000) + ' MB.'
+  });
+  if (response === 1) { try { fs.rmSync(vcDir(), { recursive: true, force: true }); fs.rmSync(listDir(), { recursive: true, force: true }); } catch (e) { /* ignore */ } revalidated.clear(); }
+}
+
 // ---------------------------------------------------------------- app lifecycle
 function buildMenu() {
   const tpl = [
@@ -272,6 +451,8 @@ function buildMenu() {
       { label: 'Use online website', click: () => load('online') },
       { label: 'Use offline copy (Tiger Touch / no internet)', click: () => load('local') },
       { label: 'Auto (online if available, else offline)', click: () => load('auto') },
+      { label: 'Update offline copy now', click: () => syncSite('menu') },
+      { label: 'Saved videos (video cache)…', click: () => videoCacheDialog() },
       { type: 'separator' },
       { label: 'Toggle full screen', accelerator: isMac ? 'Ctrl+Cmd+F' : 'F11', click: () => { if (mainWin) mainWin.setFullScreen(!mainWin.isFullScreen()); } },
       { label: 'Open output on extended screen', accelerator: 'CmdOrCtrl+Shift+O', click: () => autoOpenOutput() }
@@ -285,6 +466,14 @@ function buildMenu() {
 }
 
 app.whenReady().then(async () => {
+  const pass = async (request) => {
+    if ((request.method === 'GET' || request.method === 'OPTIONS') && LIST_RE.test(new URL(request.url).pathname)) { try { return await listPass(request); } catch (e) { /* fall through */ } }
+    const u = vcCacheable(request);
+    if (u) { try { return await vcHandle(request, u); } catch (e) { /* fall through to the server */ } }
+    return net.fetch(request, { bypassCustomProtocolHandlers: true });
+  };
+  session.defaultSession.protocol.handle('https', pass);
+  if (process.env.DK_TEST_HTTP) session.defaultSession.protocol.handle('http', pass);   // test only
   const okPerms = new Set(['media', 'audioCapture', 'window-management', 'window-placement', 'fullscreen', 'clipboard-sanitized-write']);
   const ses = session.defaultSession;
   ses.setPermissionRequestHandler((wc, perm, cb, details) => cb(okPerms.has(perm) && allowedUrl((details && details.requestingUrl) || wc.getURL())));
@@ -299,6 +488,7 @@ app.whenReady().then(async () => {
   createMain();
   load();
 
+  setInterval(() => { if (activeMode === 'online' && Date.now() - lastSync > 20 * 60 * 1000) syncSite('timer'); }, 5 * 60 * 1000);
   const mins = Math.max(1, cfg.statusCheckMinutes || 5);
   statusTimer = setInterval(async () => {
     if (blocked) return;

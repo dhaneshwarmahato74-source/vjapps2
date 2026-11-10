@@ -21,7 +21,7 @@
         c: [].concat.apply([], S.cols.map((x) => [x[0] | 0, x[1] | 0, x[2] | 0])),
         a: S.alpha.map((x) => Math.round(x * 100) / 100),
         fade: Math.round(S.fade * 100) / 100, nz: Object.assign({}, c.neon, { cur: D.neon ? D.neon.state.cur : 'electric', lv: D.neon ? D.neon.audioLevel() : -1 }), nc: c.safety.safe ? c.safety.maxBrightness : 100, lb: !!c.output.showLabels, fit: c.output.fit,
-        v: { en: !!c.video.enabled, lvl: c.video.level, bl: c.video.blend, os: c.video.overlayStrength, xf: c.video.xfadeMs, w: !!c.video.warm, map: c.video.mapMode, all: V.slots.map(url), cur: url(cur), prev: V.prev >= 0 ? url(prev) : '', fs: Math.round(t - V.fadeStart), sp: !!V.sp, spU: url(V.special), spN: V.specialPlays }
+        v: { en: !!c.video.enabled, lvl: c.video.level, bl: c.video.blend, os: c.video.overlayStrength, xf: c.video.xfadeMs, w: !!c.video.warm, map: c.video.mapMode, all: V.slots.map(url), cur: url(cur), prev: V.prev >= 0 ? url(prev) : '', fs: Math.round(t - V.fadeStart), sp: !!V.sp, spU: url(V.special), ip: !!V.ip, ipU: url(V.intro), spN: V.specialPlays }
       };
       const wm = D.wallmap; if (wm && (wm.json() !== calSent || n % 120 === 0)) { calSent = wm.json(); msg.cal = wm.get(); }
       try { D.artnet.ws.send(JSON.stringify(msg)); } catch (e) { /* ignore */ }

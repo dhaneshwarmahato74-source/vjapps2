@@ -18,6 +18,7 @@ const { WSServer } = require('./ws');
 
 const ROOT = path.resolve(__dirname, '..');
 const WEB = path.join(ROOT, 'web');
+const OVERLAY = process.env.DLS_WEB_OVERLAY ? path.resolve(process.env.DLS_WEB_OVERLAY) : ''; // synced copy of the live website (desktop app) - wins over the bundled files
 const CONFIG_PATH = process.env.DLS_CONFIG || path.join(ROOT, 'config', 'config.json');
 const PROFILES_PATH = path.join(ROOT, 'config', 'fixture-profiles.json');
 const args = process.argv.slice(2);
@@ -130,13 +131,18 @@ const server = http.createServer(async (req, res) => {
     // static
     let rel = decodeURIComponent(p);
     if (rel === '/') rel = '/index.html';
-    const file = path.normalize(path.join(WEB, rel));
-    if (!file.startsWith(WEB + path.sep) && file !== WEB) { res.writeHead(403); return res.end('forbidden'); }
-    fs.readFile(file, (err, buf) => {
-      if (err) { res.writeHead(404); return res.end('not found'); }
-      res.writeHead(200, { 'Content-Type': MIME[path.extname(file)] || 'application/octet-stream', 'Cache-Control': 'no-cache' });
-      res.end(buf);
-    });
+    const roots = OVERLAY ? [OVERLAY, WEB] : [WEB];
+    const tryRoot = (i) => {
+      if (i >= roots.length) { res.writeHead(404); return res.end('not found'); }
+      const root = roots[i], file = path.normalize(path.join(root, rel));
+      if (!file.startsWith(root + path.sep) && file !== root) { res.writeHead(403); return res.end('forbidden'); }
+      fs.readFile(file, (err, buf) => {
+        if (err) return tryRoot(i + 1);
+        res.writeHead(200, { 'Content-Type': MIME[path.extname(file)] || 'application/octet-stream', 'Cache-Control': 'no-cache' });
+        res.end(buf);
+      });
+    };
+    return tryRoot(0);
   } catch (e) {
     sendJson(res, 400, { error: String(e.message || e) });
   }

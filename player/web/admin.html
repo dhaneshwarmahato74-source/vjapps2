@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DK EDITS VJ PLAYER – Admin</title>
+<link rel="icon" type="image/png" href="img/favicon.png">
+<style>
+:root{--bg:#0d0f13;--panel:#161a21;--panel2:#1d222b;--line:#2b323e;--txt:#e6e9ef;--mut:#8b94a5;--acc:#f5b72e;--ok:#3ecf8e;--warn:#f5b84a;--bad:#ff5d6c}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--txt);font:14px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:10px 16px;border-bottom:1px solid #4a3a12;background:linear-gradient(180deg,#1b1810,var(--panel))}
+header b{font-size:17px;letter-spacing:1.5px;color:var(--acc)}
+.sp{flex:1}
+a.nav,button{font:inherit;color:var(--txt);background:#232a35;border:1px solid var(--line);border-radius:8px;padding:7px 12px;cursor:pointer;text-decoration:none}
+button:hover,a.nav:hover{border-color:var(--acc)}
+button.pri{background:linear-gradient(180deg,#ffd24d,#f0a500);color:#1a1200;border-color:var(--acc);font-weight:700}
+button.dng{color:var(--bad);border-color:#6a2a31}
+button:disabled{opacity:.5;cursor:not-allowed}
+main{max-width:820px;margin:0 auto;padding:16px;display:flex;flex-direction:column;gap:16px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:10px}
+h2{margin:0;font-size:15px}
+label{display:flex;flex-direction:column;gap:4px;color:var(--mut);font-size:12px}
+input,select{font:inherit;color:var(--txt);background:#10141a;border:1px solid var(--line);border-radius:8px;padding:9px}
+.row{display:flex;gap:10px;flex-wrap:wrap}.row>label{flex:1;min-width:180px}
+.badge{padding:2px 9px;border-radius:99px;font-size:11px;border:1px solid var(--line);color:var(--mut)}
+.badge.ok{color:var(--ok);border-color:#235c44}.badge.warn{color:var(--warn);border-color:#6a5222}
+.item{display:flex;align-items:center;gap:10px;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:9px 10px}
+.item .t{flex:1;min-width:0}.item .t b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.item .t small{color:var(--mut);display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tag{font-size:11px;padding:2px 8px;border-radius:99px;background:#2a2410;color:var(--acc);border:1px solid #4a3a12}
+.tag.sp2{background:#2a1230;color:#e08cff;border-color:#5a2a66}
+#msg{min-height:20px;font-size:13px}.ok{color:var(--ok)}.bad{color:var(--bad)}.warn{color:var(--warn)}
+.hint{color:var(--mut);font-size:12px}
+</style>
+<script src="js/appwrite-config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/appwrite@28.3.0"></script>
+<script src="js/backend.js"></script>
+<script src="js/gate.js"></script>
+</head>
+<body>
+<header>
+  <b>ADMIN</b><span class="badge" id="mode"></span><span class="sp"></span>
+  <a class="nav" href="index.html">◀ Player</a><button id="logout">Logout</button>
+</header>
+<main>
+  <section class="card">
+    <h2>Add video link</h2>
+    <div class="row">
+      <label>Name<input id="name" placeholder="e.g. Blue Wave" maxlength="100"></label>
+      <label>Type<select id="kind"><option value="normal">Normal (rotation)</option><option value="special">Special (every 4–5 min)</option><option value="intro">Starting promo (plays once at start, 3–15 s)</option></select></label>
+    </div>
+    <label>Video link (bunny.net direct MP4 / WebM)<input id="url" type="url" placeholder="https://vz-xxxx.b-cdn.net/VIDEO-ID/play_720p.mp4"></label>
+    <div class="row"><button class="pri" id="add">Add video</button></div>
+    <div id="msg"></div>
+    <div class="hint">Special aur Starting promo sirf ek-ek hi rehte hain – nayi add karoge to purani replace ho jayegi. Normal videos 4–5 rakho. HLS (.m3u8) link kaam nahi karta, direct MP4/WebM link do.</div>
+  </section>
+  <section class="card">
+    <h2>Saved links <span class="badge" id="count"></span></h2>
+    <div id="list"></div>
+  </section>
+</main>
+<script>
+(function () {
+  'use strict';
+  const $ = (s) => document.querySelector(s), B = window.DLSBackend;
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const say = (t, c) => { const m = $('#msg'); m.textContent = t; m.className = c || ''; };
+  let items = [];
+  $('#mode').textContent = B.configured ? 'Appwrite connected' : 'LOCAL MODE (Appwrite not connected)';
+  $('#mode').className = 'badge ' + (B.configured ? 'ok' : 'warn');
+  async function refresh() {
+    try { items = await B.list(); } catch (e) { say(e.message, 'bad'); items = []; }
+    $('#count').textContent = items.length;
+    $('#list').innerHTML = items.map((x) => '<div class="item"><span class="tag' + (x.kind !== 'normal' ? ' sp2' : '') + '">' + (x.kind === 'special' ? '★ special' : x.kind === 'intro' ? '▶ promo' : 'normal') + '</span><div class="t"><b>' + esc(x.name) + '</b><small>' + esc(x.url) + '</small></div><button class="dng" data-rm="' + esc(x.id) + '">Remove</button></div>').join('') || '<div class="hint">Koi link nahi hai.</div>';
+    document.querySelectorAll('[data-rm]').forEach((b) => b.addEventListener('click', async () => {
+      if (!confirm('Is video link ko hata dein?')) return;
+      b.disabled = true;
+      try { await B.remove(b.dataset.rm); say('Removed', 'ok'); } catch (e) { say(e.message, 'bad'); }
+      refresh();
+    }));
+  }
+  /* quick check that the browser can really play the link (needs CORS so the canvas stays clean) */
+  function probe(url) {
+    return new Promise((res) => {
+      const v = document.createElement('video'); v.muted = true; v.preload = 'metadata'; v.crossOrigin = 'anonymous';
+      const done = (r) => { clearTimeout(t); v.removeAttribute('src'); v.load(); res(r); };
+      const t = setTimeout(() => done({ ok: false, why: 'timeout' }), 15000);
+      v.onloadedmetadata = () => done({ ok: true, w: v.videoWidth, h: v.videoHeight, d: v.duration });
+      v.onerror = () => done({ ok: false, why: 'error' });
+      v.src = url;
+    });
+  }
+  $('#add').addEventListener('click', async () => {
+    const name = $('#name').value.trim(), url = $('#url').value.trim(), kind = $('#kind').value;
+    if (!/^https?:\/\//i.test(url)) return say('Valid link daalo (https://…)', 'bad');
+    if (items.some((x) => x.url === url)) return say('Ye link pehle se add hai', 'bad');
+    $('#add').disabled = true; say('Link check ho raha hai…');
+    const p = await probe(url);
+    let note = '';
+    if (p.ok) note = ' · ' + p.w + '×' + p.h + (p.w !== 4000 || p.h !== 500 ? ' (4000×500 nahi hai – wall pe stretch/map hoga)' : '');
+    if (p.ok && kind === 'intro' && (p.d < 3 || p.d > 15)) note += ' · ⚠ promo 3–15 sec ka hona chahiye (abhi ' + Math.round(p.d) + ' s)';
+    if (!p.ok) note = ' · ⚠ browser me play nahi hua (bunny pe CORS / MP4 fallback on karo)';
+    try {
+      if (kind !== 'normal') for (const x of items.filter((y) => y.kind === kind)) await B.remove(x.id);
+      await B.add({ name: name || url.split('/').slice(-2).join('/'), url, kind });
+      say('Added' + note, p.ok ? 'ok' : 'warn'); $('#name').value = ''; $('#url').value = '';
+    } catch (e) { say(e.message, 'bad'); }
+    $('#add').disabled = false; refresh();
+  });
+  $('#logout').addEventListener('click', async () => { await B.logout(); location.reload(); });
+  document.addEventListener('gate-open', refresh);
+})();
+</script>
+</body>
+</html>
